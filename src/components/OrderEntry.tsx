@@ -1,12 +1,33 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { Minus, Plus } from 'lucide-react'
 
 export default function OrderEntry() {
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market')
   const [side, setSide] = useState<'buy' | 'sell'>('buy')
   const [lotSize, setLotSize] = useState(0.01)
+  const [limitPrice, setLimitPrice] = useState('')
   const [stopLoss, setStopLoss] = useState('')
   const [takeProfit, setTakeProfit] = useState('')
+
+  // Calculate margin and risk percentage based on lot size
+  const marginInfo = useMemo(() => {
+    const riskPercentage = (lotSize / 1) * 100 // 1 lot = 100%
+    const marginValue = lotSize * 1000 // Each 0.1 lot = $100
+
+    // Determine color based on risk level
+    let color = 'bg-green-500'
+    if (riskPercentage > 80) {
+      color = 'bg-red-500'
+    } else if (riskPercentage > 50) {
+      color = 'bg-yellow-500'
+    }
+
+    return {
+      percentage: Math.min(riskPercentage, 100),
+      margin: marginValue,
+      color
+    }
+  }, [lotSize])
 
   const handleLotSizeChange = useCallback((direction: 'increase' | 'decrease') => {
     setLotSize(prev => {
@@ -16,6 +37,14 @@ export default function OrderEntry() {
       return Math.max(0.01, Math.min(100, Number(newValue.toFixed(2))))
     })
   }, [])
+
+  // Format currency with commas and 2 decimal places
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value)
+  }
 
   return (
     <div className="p-4 space-y-4 bg-white dark:bg-gray-800">
@@ -66,6 +95,22 @@ export default function OrderEntry() {
           SELL
         </button>
       </div>
+
+      {/* Limit Price Input */}
+      {orderType === 'limit' && (
+        <div className="relative">
+          <input
+            type="text"
+            value={limitPrice}
+            onChange={(e) => setLimitPrice(e.target.value)}
+            className="w-full p-2 border-2 rounded-lg bg-transparent border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+            placeholder="0.00"
+          />
+          <div className="absolute -top-2 left-4 px-1 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
+            PRICE
+          </div>
+        </div>
+      )}
 
       {/* Lot Size Control */}
       <div className="relative">
@@ -131,15 +176,16 @@ export default function OrderEntry() {
       </div>
 
       {/* Margin Risk Indicator */}
-      <div className="relative">
-        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="space-y-2">
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-blue-500" 
-            style={{ width: '50%' }}  // This would be calculated based on actual margin/risk
+            className={`h-full transition-all duration-300 ${marginInfo.color}`}
+            style={{ width: `${marginInfo.percentage}%` }}
           />
         </div>
-        <div className="absolute -top-2 left-4 px-1 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800">
-          Margin - Risk
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
+          <span>Margin: {formatCurrency(marginInfo.margin)}</span>
+          <span>{marginInfo.percentage.toFixed(1)}%</span>
         </div>
       </div>
 
