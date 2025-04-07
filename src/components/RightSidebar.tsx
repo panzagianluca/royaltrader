@@ -1,9 +1,73 @@
 import { TrendingUp, TrendingDown, Calculator, Calendar, Newspaper } from 'lucide-react'
+import { useState, useCallback, useEffect } from 'react'
+import AccountSelector from './AccountSelector'
 
 export default function RightSidebar() {
+  const [accountSectionHeight, setAccountSectionHeight] = useState('50%')
+  const [isResizing, setIsResizing] = useState(false)
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsResizing(true)
+    e.preventDefault()
+  }, [])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isResizing) return
+    
+    const sidebar = e.currentTarget.parentElement
+    if (!sidebar) return
+    
+    const rect = sidebar.getBoundingClientRect()
+    const newHeight = ((e.clientY - rect.top) / rect.height) * 100
+    
+    // Limit the height between 30% and 70% of the sidebar
+    const clampedHeight = Math.min(Math.max(newHeight, 30), 70)
+    setAccountSectionHeight(`${clampedHeight}%`)
+  }, [isResizing])
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false)
+  }, [])
+
+  // Change useState to useEffect for event listeners
+  useEffect(() => {
+    const handleGlobalMouseUp = () => setIsResizing(false);
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isResizing) {
+        const sidebar = document.querySelector('.right-sidebar');
+        if (!sidebar) return;
+        
+        const rect = sidebar.getBoundingClientRect();
+        const newHeight = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        const clampedHeight = Math.min(Math.max(newHeight, 30), 70);
+        setAccountSectionHeight(`${clampedHeight}%`);
+      }
+    };
+
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+    };
+  }, [isResizing]);
+
   return (
-    <div className="w-64 border-l dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto">
-      <div className="p-4">
+    <div 
+      className="right-sidebar w-64 border-l dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto flex flex-col"
+    >
+      <div style={{ height: accountSectionHeight, minHeight: '200px' }}>
+        <AccountSelector />
+      </div>
+
+      <div 
+        className="h-1 bg-gray-200 dark:bg-gray-700 cursor-row-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+        onMouseDown={handleMouseDown}
+      />
+
+      <div className="flex-1 overflow-y-auto p-4">
         <h2 className="text-lg font-semibold mb-4 dark:text-white">Order Entry</h2>
         
         <div className="space-y-4 mb-6">
