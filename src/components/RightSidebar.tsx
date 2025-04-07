@@ -1,6 +1,7 @@
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Calculator, Calendar, Newspaper } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useCallback, useEffect } from 'react'
 import OrderEntry from './OrderEntry'
+import Watchlist from './Watchlist'
 
 interface RightSidebarProps {
   collapsed: boolean
@@ -10,7 +11,6 @@ interface RightSidebarProps {
 export default function RightSidebar({ collapsed, onToggleCollapse }: RightSidebarProps) {
   const [accountSectionHeight, setAccountSectionHeight] = useState('50%')
   const [isResizing, setIsResizing] = useState(false)
-  const [orderType, setOrderType] = useState<'market' | 'limit'>('market')
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     setIsResizing(true)
@@ -27,7 +27,6 @@ export default function RightSidebar({ collapsed, onToggleCollapse }: RightSideb
         const rect = sidebar.getBoundingClientRect()
         const newHeight = ((e.clientY - rect.top) / rect.height) * 100
         
-        // Limit the height between 30% and 70% of the sidebar
         const clampedHeight = Math.min(Math.max(newHeight, 30), 70)
         setAccountSectionHeight(`${clampedHeight}%`)
       }
@@ -50,18 +49,23 @@ export default function RightSidebar({ collapsed, onToggleCollapse }: RightSideb
       >
         {collapsed ? <ChevronLeft size={18} className="text-gray-600 dark:text-gray-300" /> : <ChevronRight size={18} className="text-gray-600 dark:text-gray-300" />}
       </button>
-      <div className="flex-1 overflow-y-auto">
-        {!collapsed && <OrderEntry />}
-      </div>
-    </div>
-  )
-}
-
-function SidebarItem({ icon, title }: { icon: React.ReactNode, title: string }) {
-  return (
-    <div className="flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
-      <div className="text-blue-500 dark:text-blue-400">{icon}</div>
-      <span className="dark:text-white">{title}</span>
+      
+      {!collapsed && (
+        <>
+          <div className="flex-1 overflow-hidden" style={{ height: accountSectionHeight }}>
+            <Watchlist />
+          </div>
+          
+          <div 
+            className="h-1 bg-gray-200 dark:bg-gray-700 cursor-row-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+            onMouseDown={handleMouseDown}
+          />
+          
+          <div className="flex-1 overflow-y-auto">
+            <OrderEntry />
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -85,4 +85,4 @@ export default function Chart() {
       </div>
     </div>
   )
-} 
+}
