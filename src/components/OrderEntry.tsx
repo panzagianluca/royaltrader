@@ -1,7 +1,9 @@
 import { useState, useCallback, useMemo } from 'react'
 import { Minus, Plus } from 'lucide-react'
+import { useTrading } from '../context/TradingContext'
 
 export default function OrderEntry() {
+  const { symbol } = useTrading()
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market')
   const [side, setSide] = useState<'buy' | 'sell'>('buy')
   const [lotSize, setLotSize] = useState(0.01)
@@ -54,7 +56,7 @@ export default function OrderEntry() {
           Order Entry
         </h2>
         <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-          BTCUSDT
+          {symbol}
         </div>
       </div>
 
