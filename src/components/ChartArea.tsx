@@ -10,7 +10,7 @@ interface TradingViewWidgetProps {
 }
 
 const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(({
-  symbol = "NASDAQ:AAPL", // Default symbol
+  symbol = "FX:EURUSD", // Default symbol
   interval = "15",         // Default interval (Daily)
   darkMode = true,       // Default theme
   style = "1",            // Default style (Bars)
@@ -42,6 +42,7 @@ const TradingViewWidget: React.FC<TradingViewWidgetProps> = memo(({
       locale: locale,
       hide_side_toolbar: false,
       allow_symbol_change: true,
+      hide_volume: true,
       // Add other relevant config options here based on TradingView docs
       // "withdateranges": true,
       // "hide_volume": true,

@@ -1,55 +1,61 @@
-import { useState } from 'react'
-import { BarChart2, Shield, Clock, Settings, ChevronLeft, ChevronRight, Calendar, ChevronDown } from 'lucide-react'
+import { useState, useCallback, useEffect } from 'react'
+import { BarChart2, Shield, Clock, Settings, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import AccountSelector from './AccountSelector'
 
 export default function LeftSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [activeItem, setActiveItem] = useState('Charts')
-  const [showAccounts, setShowAccounts] = useState(false)
-  const [selectedAccount, setSelectedAccount] = useState('Account #123456')
+  const [accountSectionHeight, setAccountSectionHeight] = useState('50%')
+  const [isResizing, setIsResizing] = useState(false)
 
-  const accounts = [
-    'Account #123456',
-    'Account #789012',
-    'Account #345678'
-  ]
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsResizing(true)
+    e.preventDefault()
+  }, [])
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => setIsResizing(false)
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isResizing) {
+        const sidebar = document.querySelector('.left-sidebar')
+        if (!sidebar) return
+        
+        const rect = sidebar.getBoundingClientRect()
+        const newHeight = ((e.clientY - rect.top) / rect.height) * 100
+        
+        // Limit the height between 30% and 70% of the sidebar
+        const clampedHeight = Math.min(Math.max(newHeight, 30), 70)
+        setAccountSectionHeight(`${clampedHeight}%`)
+      }
+    }
+
+    window.addEventListener('mouseup', handleGlobalMouseUp)
+    window.addEventListener('mousemove', handleGlobalMouseMove)
+
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp)
+      window.removeEventListener('mousemove', handleGlobalMouseMove)
+    }
+  }, [isResizing])
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} border-r dark:border-gray-700 bg-white dark:bg-gray-800 overflow-y-auto transition-all duration-300`}>
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          {!collapsed && (
-            <div className="relative w-full">
-              <button 
-                onClick={() => setShowAccounts(!showAccounts)}
-                className="flex items-center justify-between w-full px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <span className="font-medium dark:text-white">{selectedAccount}</span>
-                <ChevronDown size={16} className="dark:text-white" />
-              </button>
-              
-              {showAccounts && (
-                <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded shadow-lg">
-                  {accounts.map(account => (
-                    <div 
-                      key={account}
-                      onClick={() => {
-                        setSelectedAccount(account)
-                        setShowAccounts(false)
-                      }}
-                      className={`px-3 py-2 cursor-pointer ${account === selectedAccount ? 'bg-blue-100 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                    >
-                      <span className="dark:text-white">{account}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+    <div className={`left-sidebar ${collapsed ? 'w-16' : 'w-64'} border-r dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col transition-all duration-300`}>
+      <div style={{ height: accountSectionHeight }} className="min-h-[200px]">
+        {!collapsed && <AccountSelector />}
+      </div>
+
+      <div 
+        className="h-1 bg-gray-200 dark:bg-gray-700 cursor-row-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+        onMouseDown={handleMouseDown}
+      />
+
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex justify-end mb-4">
           <button 
             onClick={() => setCollapsed(!collapsed)}
             className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            {collapsed ? <ChevronRight size={18} className="dark:text-white" /> : <ChevronLeft size={18} className="dark:text-white" />}
           </button>
         </div>
 

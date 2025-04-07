@@ -75,7 +75,7 @@ export default function AccountSelector() {
               ) : (
                 <ChevronRight size={16} className="text-gray-500 dark:text-gray-400" />
               )}
-              <span className="dark:text-white">{category.name}</span>
+              <span className="dark:text-white truncate">{category.name}</span>
             </div>
             
             {expandedCategories.has(category.id) && (
@@ -88,7 +88,7 @@ export default function AccountSelector() {
                     }`}
                     onClick={() => handleAccountClick(account.id)}
                   >
-                    <span className="text-sm dark:text-gray-300">
+                    <span className="text-sm dark:text-gray-300 truncate">
                       {account.number}: {account.userName}
                     </span>
                   </div>
