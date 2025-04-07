@@ -12,7 +12,7 @@ export default function Watchlist() {
     script.innerHTML = JSON.stringify({
       "colorTheme": "dark",
       "dateRange": "1M",
-      "showChart": true,
+      "showChart": false,
       "locale": "en",
       "width": "100%",
       "height": "100%",
