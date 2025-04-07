@@ -39,8 +39,14 @@ export default function LeftSidebar() {
   }, [isResizing])
 
   return (
-    <div className={`left-sidebar ${collapsed ? 'w-16' : 'w-64'} border-r dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col transition-all duration-300`}>
-      <div style={{ height: accountSectionHeight }} className="min-h-[200px]">
+    <div className={`left-sidebar ${collapsed ? 'w-16' : 'w-64'} h-full border-r dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col transition-all duration-300 relative`}>
+      <button 
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors z-10"
+      >
+        {collapsed ? <ChevronRight size={18} className="text-gray-600 dark:text-gray-300" /> : <ChevronLeft size={18} className="text-gray-600 dark:text-gray-300" />}
+      </button>
+      <div className="flex-1 overflow-y-auto">
         {!collapsed && <AccountSelector />}
       </div>
 
@@ -50,15 +56,6 @@ export default function LeftSidebar() {
       />
 
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="flex justify-end mb-4">
-          <button 
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            {collapsed ? <ChevronRight size={18} className="dark:text-white" /> : <ChevronLeft size={18} className="dark:text-white" />}
-          </button>
-        </div>
-
         <div className="space-y-4">
           <SidebarItem 
             icon={<BarChart2 size={18} />} 

@@ -19,14 +19,23 @@ export default function Layout() {
   }, [darkMode])
 
   return (
-    <div className={`flex flex-col h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
+    <div className={`flex flex-col h-screen relative ${darkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
       <TopNav darkMode={darkMode} setDarkMode={setDarkMode} />
       <div className="flex flex-1 overflow-hidden">
-        <LeftSidebar />
+        {/* Main content area */}
         {isClient ? <ChartArea darkMode={darkMode} /> : <div className="flex-1 bg-white dark:bg-gray-900" />}
-        <RightSidebar />
       </div>
       <BottomBanner />
+      
+      {/* LeftSidebar positioned absolutely to overlap */}
+      <div className="absolute top-0 left-0 h-full z-10">
+        <LeftSidebar />
+      </div>
+      
+      {/* RightSidebar positioned absolutely to overlap */}
+      <div className="absolute top-0 right-0 h-full z-10">
+        <RightSidebar />
+      </div>
     </div>
   )
 }
