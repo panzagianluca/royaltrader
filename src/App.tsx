@@ -6,7 +6,6 @@ import TopNav from './components/TopNav'
 import Chart from './components/Chart'
 import BottomBanner from './components/BottomBanner'
 import { themeConfig } from './styles/theme'
-import '@radix-ui/themes/styles.css'
 import './styles/theme.css'
 
 function App() {
