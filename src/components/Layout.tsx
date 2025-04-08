@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
+import { Theme } from '@radix-ui/themes'
 import LeftSidebar from './LeftSidebar'
 import RightSidebar from './RightSidebar'
-import ChartArea from './ChartArea'
+import Chart from './Chart'
 import TopNav from './TopNav'
 import BottomBanner from './BottomBanner'
+import { themeConfig } from '../styles/theme'
+import '@radix-ui/themes/styles.css'
+import '../styles/theme.css'
 
 export default function Layout() {
   const [darkMode, setDarkMode] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -23,7 +28,15 @@ export default function Layout() {
       <TopNav darkMode={darkMode} setDarkMode={setDarkMode} />
       <div className="flex flex-1 overflow-hidden">
         {/* Main content area */}
-        {isClient ? <ChartArea darkMode={darkMode} /> : <div className="flex-1 bg-white dark:bg-gray-900" />}
+        <div className="flex-1 flex">
+          <div className="flex-1">
+            {isClient ? <Chart darkMode={darkMode} /> : <div className="flex-1 bg-white dark:bg-gray-900" />}
+          </div>
+          <RightSidebar 
+            collapsed={rightSidebarCollapsed}
+            onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+          />
+        </div>
       </div>
       <BottomBanner />
       

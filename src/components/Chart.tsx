@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 
-export default function Chart() {
+interface ChartProps {
+  darkMode: boolean
+}
+
+export default function Chart({ darkMode }: ChartProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -36,14 +40,13 @@ export default function Chart() {
           container_id: 'tradingview_chart',
           symbol: 'FX:EURUSD',
           interval: '1',
-          theme: 'dark',
+          theme: darkMode ? 'dark' : 'light',
           style: '1',
           locale: 'en',
-          toolbar_bg: '#f1f3f6',
+          toolbar_bg: darkMode ? '#1e293b' : '#f1f3f6',
           enable_publishing: false,
           allow_symbol_change: true,
           save_image: false,
-          hide_volume: true,
           height: '100%',
           width: '100%',
           hide_side_toolbar: false,
@@ -68,7 +71,7 @@ export default function Chart() {
         document.head.removeChild(script)
       }
     }
-  }, [])
+  }, [darkMode])
 
   return (
     <div className="w-full h-full bg-white dark:bg-gray-800">
@@ -80,7 +83,6 @@ export default function Chart() {
             </div>
           )}
           <div id="tradingview_chart" className="h-full"></div>
-
         </div>
       </div>
     </div>
