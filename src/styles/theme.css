@@ -251,4 +251,10 @@
   color: var(--accent-blue);
 }
 
-.
+.bg-background-primary {
+  background-color: var(--background-primary);
+}
+
+.bg-background-alpha {
+  background-color: var(--background-alpha);
+}
