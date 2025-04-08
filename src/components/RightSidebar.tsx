@@ -1,8 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-<<<<<<< HEAD
-=======
 import { useState, useCallback, useEffect } from 'react'
->>>>>>> c254e8cf48d387eb4c76990f33465727455194c6
 import OrderEntry from './OrderEntry'
 import Watchlist from './Watchlist'
 
@@ -12,8 +9,6 @@ interface RightSidebarProps {
 }
 
 export default function RightSidebar({ collapsed, onToggleCollapse }: RightSidebarProps) {
-<<<<<<< HEAD
-=======
   const [accountSectionHeight, setAccountSectionHeight] = useState('50%')
   const [isResizing, setIsResizing] = useState(false)
 
@@ -46,7 +41,6 @@ export default function RightSidebar({ collapsed, onToggleCollapse }: RightSideb
     }
   }, [isResizing])
 
->>>>>>> c254e8cf48d387eb4c76990f33465727455194c6
   return (
     <div className={`right-sidebar ${collapsed ? 'w-16' : 'w-[400px]'} h-full border-l border-background-alpha bg-background-primary flex flex-col transition-all duration-500 ease-in-out relative`}>
       <button 
@@ -58,27 +52,6 @@ export default function RightSidebar({ collapsed, onToggleCollapse }: RightSideb
           <ChevronRight size={18} className="text-primary transition-transform duration-500 ease-in-out" />
         }
       </button>
-<<<<<<< HEAD
-      {!collapsed && (
-        <div className="flex flex-col h-full">
-          <div className="flex-1 min-h-0">
-            <Watchlist />
-          </div>
-          <div className="border-t border-background-alpha">
-            <OrderEntry />
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function SidebarItem({ icon, title }: { icon: React.ReactNode, title: string }) {
-  return (
-    <div className="flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
-      <div className="text-blue-500 dark:text-blue-400">{icon}</div>
-      <span className="dark:text-white">{title}</span>
-=======
       
       {!collapsed && (
         <>
@@ -96,7 +69,15 @@ function SidebarItem({ icon, title }: { icon: React.ReactNode, title: string }) 
           </div>
         </>
       )}
->>>>>>> c254e8cf48d387eb4c76990f33465727455194c6
+    </div>
+  )
+}
+
+function SidebarItem({ icon, title }: { icon: React.ReactNode, title: string }) {
+  return (
+    <div className="flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+      <div className="text-blue-500 dark:text-blue-400">{icon}</div>
+      <span className="dark:text-white">{title}</span>
     </div>
   )
 }
