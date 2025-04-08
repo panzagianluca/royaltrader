@@ -29,7 +29,14 @@ function App() {
   }, [darkMode])
 
   return (
-    <Theme {...themeConfig} appearance={darkMode ? 'dark' : 'light'}>
+    <Theme 
+      {...themeConfig} 
+      appearance={darkMode ? 'dark' : 'light'}
+      accentColor="violet"
+      grayColor="gray"
+      radius="medium"
+      scaling="100%"
+    >
       <div className="flex h-screen overflow-hidden bg-background-primary">
         <LeftSidebar />
         <div className="flex-1 flex flex-col">
