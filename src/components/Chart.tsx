@@ -87,4 +87,4 @@ export default function Chart({ darkMode }: ChartProps) {
       </div>
     </div>
   )
-} 
+}
