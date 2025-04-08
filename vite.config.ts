@@ -21,6 +21,9 @@ export default defineConfig({
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
       output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', '@radix-ui/themes', 'lucide-react'],
+        },
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
@@ -30,6 +33,6 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-  base: '/',
+  base: './',
   publicDir: 'public',
 })
