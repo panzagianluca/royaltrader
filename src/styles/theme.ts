@@ -1,5 +1,3 @@
-import { Theme } from '@radix-ui/themes'
-
 export const themeConfig = {
   appearance: 'dark',
   accentColor: 'violet',

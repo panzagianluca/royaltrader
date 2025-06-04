@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BarChart2, Shield, Clock, Settings, Calendar, Crown, PanelLeftClose, PanelLeft, ChevronRight } from 'lucide-react'
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,

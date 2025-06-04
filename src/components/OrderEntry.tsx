@@ -1,14 +1,10 @@
-import { useState, useCallback, useMemo } from 'react'
-import { Minus, Plus } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import { Minus, Plus, Check } from 'lucide-react'
 import * as Progress from '@radix-ui/react-progress'
-import * as Slider from '@radix-ui/react-slider'
-import * as ToggleGroup from '@radix-ui/react-toggle-group'
 import * as Label from '@radix-ui/react-label'
 import * as Checkbox from '@radix-ui/react-checkbox'
 import { Button, SegmentedControl } from '@radix-ui/themes'
-import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Input } from "@/components/ui/input"
 
 export default function OrderEntry() {
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market')
@@ -19,8 +15,8 @@ export default function OrderEntry() {
   const [takeProfit, setTakeProfit] = useState('')
   const [isStopLossEnabled, setIsStopLossEnabled] = useState(false)
   const [isTakeProfitEnabled, setIsTakeProfitEnabled] = useState(false)
-  const [currentPrice, setCurrentPrice] = useState('1.0850')
-  const [balance, setBalance] = useState(100000)
+  const [currentPrice] = useState('1.0850')
+  const [balance] = useState(100000)
   const [stopLossDistance, setStopLossDistance] = useState('0')
   const [stopLossPnL, setStopLossPnL] = useState('')
   const [stopLossPnLPercentage, setStopLossPnLPercentage] = useState('')
