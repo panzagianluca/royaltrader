@@ -1,257 +1,228 @@
-import { useState } from 'react'
-import { BarChart2, Shield, Clock, Settings, ChevronLeft, ChevronRight, Calendar, Crown } from 'lucide-react'
-import AccountTree from './AccountTree'
+import { useState, useEffect } from 'react'
+import { BarChart2, Shield, Clock, Settings, ChevronLeft, ChevronRight, Calendar, Crown, PanelLeftClose, PanelLeft } from 'lucide-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import AccountManageModal from './AccountManageModal'
 
 interface Account {
   id: string
-  type: 'challenge' | 'funded'
-  program: 'Royal Pro' | 'Dragon' | 'Knight'
   accountNumber: string
   balance: number
-  isActive: boolean
-  isVisible: boolean
-  phase: 'Phase 1' | 'Phase 2' | 'Funded'
+  type: 'demo' | 'live'
+  isVisible?: boolean
+  isActive?: boolean
 }
 
-interface AccountGroup {
-  type: 'challenge' | 'funded'
-  label: string
-  programs: {
-    name: string
-    accounts: Account[]
-  }[]
-}
-
-const initialAccounts: AccountGroup[] = [
+const initialAccounts: Account[] = [
   {
-    type: 'challenge',
-    label: 'Challenge Accounts',
-    programs: [
-      {
-        name: 'Royal Pro',
-        accounts: [
-          {
-            id: '1',
-            type: 'challenge',
-            program: 'Royal Pro',
-            accountNumber: '5192834',
-            balance: 100000,
-            isActive: true,
-            isVisible: true,
-            phase: 'Phase 1'
-          },
-          {
-            id: '2',
-            type: 'challenge',
-            program: 'Royal Pro',
-            accountNumber: '1613423',
-            balance: 150000,
-            isActive: true,
-            isVisible: true,
-            phase: 'Phase 2'
-          },
-          {
-            id: '3',
-            type: 'challenge',
-            program: 'Royal Pro',
-            accountNumber: '8723456',
-            balance: 200000,
-            isActive: false,
-            isVisible: false,
-            phase: 'Phase 1'
-          }
-        ]
-      },
-      {
-        name: 'Dragon',
-        accounts: [
-          {
-            id: '4',
-            type: 'challenge',
-            program: 'Dragon',
-            accountNumber: '9345678',
-            balance: 100000,
-            isActive: true,
-            isVisible: true,
-            phase: 'Phase 1'
-          },
-          {
-            id: '5',
-            type: 'challenge',
-            program: 'Dragon',
-            accountNumber: '4567890',
-            balance: 150000,
-            isActive: false,
-            isVisible: false,
-            phase: 'Phase 2'
-          },
-          {
-            id: '6',
-            type: 'challenge',
-            program: 'Dragon',
-            accountNumber: '1234567',
-            balance: 200000,
-            isActive: false,
-            isVisible: false,
-            phase: 'Phase 1'
-          }
-        ]
-      }
-    ]
+    id: '1',
+    accountNumber: '5192834',
+    balance: 100000,
+    type: 'demo',
+    isVisible: true,
+    isActive: true
   },
   {
-    type: 'funded',
-    label: 'Funded Accounts',
-    programs: [
-      {
-        name: 'Royal Pro',
-        accounts: [
-          {
-            id: '7',
-            type: 'funded',
-            program: 'Royal Pro',
-            accountNumber: '7654321',
-            balance: 500000,
-            isActive: true,
-            isVisible: true,
-            phase: 'Funded'
-          },
-          {
-            id: '8',
-            type: 'funded',
-            program: 'Royal Pro',
-            accountNumber: '8901234',
-            balance: 750000,
-            isActive: false,
-            isVisible: false,
-            phase: 'Funded'
-          },
-          {
-            id: '9',
-            type: 'funded',
-            program: 'Royal Pro',
-            accountNumber: '2345678',
-            balance: 1000000,
-            isActive: false,
-            isVisible: false,
-            phase: 'Funded'
-          }
-        ]
-      },
-      {
-        name: 'Knight',
-        accounts: [
-          {
-            id: '10',
-            type: 'funded',
-            program: 'Knight',
-            accountNumber: '3456789',
-            balance: 500000,
-            isActive: true,
-            isVisible: true,
-            phase: 'Funded'
-          },
-          {
-            id: '11',
-            type: 'funded',
-            program: 'Knight',
-            accountNumber: '6789012',
-            balance: 750000,
-            isActive: false,
-            isVisible: false,
-            phase: 'Funded'
-          },
-          {
-            id: '12',
-            type: 'funded',
-            program: 'Knight',
-            accountNumber: '9012345',
-            balance: 1000000,
-            isActive: false,
-            isVisible: false,
-            phase: 'Funded'
-          }
-        ]
-      }
-    ]
+    id: '2',
+    accountNumber: '1613423',
+    balance: 150000,
+    type: 'demo',
+    isVisible: true,
+    isActive: true
+  },
+  {
+    id: '3',
+    accountNumber: '7654321',
+    balance: 500000,
+    type: 'live',
+    isVisible: true,
+    isActive: true
+  },
+  {
+    id: '4',
+    accountNumber: '8901234',
+    balance: 750000,
+    type: 'live',
+    isVisible: false,
+    isActive: false
   }
 ]
 
-export default function LeftSidebar() {
+interface SidebarItemProps {
+  icon: React.ReactNode
+  title: string
+  active?: boolean
+  collapsed?: boolean
+  onClick?: () => void
+}
+
+function SidebarItem({ icon, title, active = false, collapsed = false, onClick }: SidebarItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+        active ? 'bg-gray-3 text-gray-12' : 'hover:bg-gray-3 text-gray-11'
+      }`}
+    >
+      {icon}
+      {!collapsed && <span className="text-sm">{title}</span>}
+    </button>
+  )
+}
+
+interface LeftSidebarProps {
+  selectedAccount?: Account
+  onAccountSelect: (account: Account) => void
+}
+
+export default function LeftSidebar({ selectedAccount, onAccountSelect }: LeftSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [activeItem, setActiveItem] = useState('Charts')
+  const [accounts, setAccounts] = useState<Account[]>(initialAccounts)
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
-  const [accounts, setAccounts] = useState<AccountGroup[]>(initialAccounts)
 
-  const handleUpdateAccounts = (updatedAccounts: AccountGroup[]) => {
+  const demoAccounts = accounts.filter(acc => acc.type === 'demo')
+  const liveAccounts = accounts.filter(acc => acc.type === 'live')
+
+  useEffect(() => {
+    // Set initial selected account
+    if (!selectedAccount && accounts.length > 0) {
+      onAccountSelect(accounts[0])
+    }
+  }, [])
+
+  const formatBalance = (balance: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(balance)
+  }
+
+  const handleAccountClick = (account: Account) => {
+    onAccountSelect(account)
+  }
+
+  const handleUpdateAccounts = (updatedAccounts: Account[]) => {
     setAccounts(updatedAccounts)
   }
 
   return (
-    <div className={`left-sidebar ${collapsed ? 'w-16' : 'w-64'} h-full border-r border-background-alpha bg-background-primary flex flex-col transition-all duration-500 ease-in-out relative`}>
-      <button 
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-background-primary border border-background-alpha rounded-full flex items-center justify-center shadow-md hover:bg-background-alpha transition-all duration-300 ease-in-out z-10"
-      >
-        {collapsed ? 
-          <ChevronRight size={18} className="text-primary" /> : 
-          <ChevronLeft size={18} className="text-primary" />
-        }
-      </button>
-
+    <div className={`left-sidebar ${collapsed ? 'w-16' : 'w-64'} h-full border-r border-gray-7 bg-background-primary flex flex-col transition-all duration-500 ease-in-out`}>
       {/* Logo Section */}
-      <div className="p-4 border-b border-background-alpha">
+      <div className="h-[53px] px-4 border-b border-gray-7 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Crown size={24} className="text-accent-blue" />
+          <Crown size={24} className="text-blue-500" />
           {!collapsed && <span className="text-lg font-semibold">Royal Trader</span>}
         </div>
+        <button 
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-1 rounded hover:bg-gray-3 transition-colors"
+        >
+          {collapsed ? 
+            <PanelLeft size={18} className="text-gray-12" /> : 
+            <PanelLeftClose size={18} className="text-gray-12" />
+          }
+        </button>
       </div>
 
-      {/* Account Tree */}
-      <AccountTree 
-        collapsed={collapsed}
-        onManageAccounts={() => setIsManageModalOpen(true)}
-        accounts={accounts}
-      />
+      <div className="flex-1 overflow-y-auto">
+        {!collapsed && (
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg">Accounts</h2>
+              <button 
+                onClick={() => setIsManageModalOpen(true)} 
+                className="p-1 rounded hover:bg-gray-3"
+              >
+                <Settings size={18} className="text-gray-12" />
+              </button>
+            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="demo">
+                <AccordionTrigger className="text-sm font-normal">Demo Accounts</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2">
+                    {demoAccounts.map(account => (
+                      <button
+                        key={account.id}
+                        onClick={() => handleAccountClick(account)}
+                        className={`w-full flex justify-between items-center text-sm p-2 hover:bg-gray-3 rounded transition-colors ${
+                          selectedAccount?.id === account.id ? 'bg-gray-3 text-gray-12' : 'text-gray-11'
+                        }`}
+                      >
+                        <span>{account.accountNumber}</span>
+                        <span>{formatBalance(account.balance)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="live">
+                <AccordionTrigger className="text-sm font-normal">Live Accounts</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-2">
+                    {liveAccounts.map(account => (
+                      <button
+                        key={account.id}
+                        onClick={() => handleAccountClick(account)}
+                        className={`w-full flex justify-between items-center text-sm p-2 hover:bg-gray-3 rounded transition-colors ${
+                          selectedAccount?.id === account.id ? 'bg-gray-3 text-gray-12' : 'text-gray-11'
+                        }`}
+                      >
+                        <span>{account.accountNumber}</span>
+                        <span>{formatBalance(account.balance)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
 
-      {/* Navigation Items */}
-      <div className="flex-1 space-y-1 p-4">
-        <SidebarItem 
-          icon={<BarChart2 size={18} />} 
-          title="Charts" 
-          active={activeItem === 'Charts'}
-          onClick={() => setActiveItem('Charts')}
-          collapsed={collapsed}
-        />
-        <SidebarItem 
-          icon={<Shield size={18} />} 
-          title="Risk Management" 
-          active={activeItem === 'Risk Management'}
-          onClick={() => setActiveItem('Risk Management')}
-          collapsed={collapsed}
-        />
-        <SidebarItem 
-          icon={<Calendar size={18} />} 
-          title="Economic Calendar" 
-          active={activeItem === 'Economic Calendar'}
-          onClick={() => setActiveItem('Economic Calendar')}
-          collapsed={collapsed}
-        />
-        <SidebarItem 
-          icon={<Clock size={18} />} 
-          title="Trading History & Report" 
-          active={activeItem === 'Trading History & Report'}
-          onClick={() => setActiveItem('Trading History & Report')}
-          collapsed={collapsed}
-        />
-        <SidebarItem 
-          icon={<Settings size={18} />} 
-          title="Settings" 
-          active={activeItem === 'Settings'}
-          onClick={() => setActiveItem('Settings')}
-          collapsed={collapsed}
-        />
+        <div className="space-y-1 p-2">
+          <SidebarItem
+            icon={<BarChart2 size={18} />}
+            title="Charts"
+            active={activeItem === 'Charts'}
+            collapsed={collapsed}
+            onClick={() => setActiveItem('Charts')}
+          />
+          <SidebarItem
+            icon={<Shield size={18} />}
+            title="Risk Management"
+            active={activeItem === 'Risk'}
+            collapsed={collapsed}
+            onClick={() => setActiveItem('Risk')}
+          />
+          <SidebarItem
+            icon={<Clock size={18} />}
+            title="Trading Hours"
+            active={activeItem === 'Hours'}
+            collapsed={collapsed}
+            onClick={() => setActiveItem('Hours')}
+          />
+          <SidebarItem
+            icon={<Calendar size={18} />}
+            title="Economic Calendar"
+            active={activeItem === 'Calendar'}
+            collapsed={collapsed}
+            onClick={() => setActiveItem('Calendar')}
+          />
+          <SidebarItem
+            icon={<Crown size={18} />}
+            title="Leaderboard"
+            active={activeItem === 'Leaderboard'}
+            collapsed={collapsed}
+            onClick={() => setActiveItem('Leaderboard')}
+          />
+        </div>
       </div>
 
       {/* Account Management Modal */}
@@ -261,35 +232,6 @@ export default function LeftSidebar() {
         accounts={accounts}
         onUpdateAccounts={handleUpdateAccounts}
       />
-    </div>
-  )
-}
-
-function SidebarItem({ 
-  icon, 
-  title, 
-  active = false,
-  collapsed = false,
-  onClick
-}: { 
-  icon: React.ReactNode, 
-  title: string, 
-  active?: boolean,
-  collapsed?: boolean,
-  onClick?: () => void
-}) {
-  return (
-    <div 
-      className={`flex items-center space-x-2 p-2 rounded cursor-pointer ${
-        active 
-          ? 'bg-accent-blue/10 text-accent-blue' 
-          : 'hover:bg-background-alpha text-primary'
-      }`}
-      title={collapsed ? title : undefined}
-      onClick={onClick}
-    >
-      <div className={active ? 'text-accent-blue' : 'text-primary'}>{icon}</div>
-      {!collapsed && <span>{title}</span>}
     </div>
   )
 }

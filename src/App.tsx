@@ -8,9 +8,19 @@ import BottomBanner from './components/BottomBanner'
 import { themeConfig } from './styles/theme'
 import './styles/theme.css'
 
+interface Account {
+  id: string
+  accountNumber: string
+  balance: number
+  type: 'demo' | 'live'
+  isVisible?: boolean
+  isActive?: boolean
+}
+
 function App() {
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
   const [bottomBannerExpanded, setBottomBannerExpanded] = useState(true)
+  const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined)
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage for saved preference
     const saved = localStorage.getItem('darkMode')
@@ -37,9 +47,16 @@ function App() {
       scaling="100%"
     >
       <div className="flex h-screen overflow-hidden bg-background-primary">
-        <LeftSidebar />
+        <LeftSidebar 
+          selectedAccount={selectedAccount} 
+          onAccountSelect={setSelectedAccount} 
+        />
         <div className="flex-1 flex flex-col">
-          <TopNav darkMode={darkMode} setDarkMode={setDarkMode} />
+          <TopNav 
+            darkMode={darkMode} 
+            setDarkMode={setDarkMode} 
+            selectedAccount={selectedAccount}
+          />
           <div className="flex-1 flex flex-col min-h-0">
             <div className={`flex flex-1 min-h-0 transition-all duration-500 ease-in-out ${bottomBannerExpanded ? 'h-[calc(100%-200px)]' : 'h-[calc(100%-40px)]'}`}>
               <div className="flex-1">
