@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react'
-import { BarChart2, Shield, Clock, Settings, ChevronLeft, ChevronRight, Calendar, Crown, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { BarChart2, Shield, Clock, Settings, Calendar, Crown, PanelLeftClose, PanelLeft, ChevronRight } from 'lucide-react'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import AccountManageModal from './AccountManageModal'
 
 interface Account {
@@ -84,9 +89,13 @@ export default function LeftSidebar({ selectedAccount, onAccountSelect }: LeftSi
   const [activeItem, setActiveItem] = useState('Charts')
   const [accounts, setAccounts] = useState<Account[]>(initialAccounts)
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
+  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
+    demo: true,
+    live: true
+  })
 
-  const demoAccounts = accounts.filter(acc => acc.type === 'demo')
-  const liveAccounts = accounts.filter(acc => acc.type === 'live')
+  const demoAccounts = accounts.filter(acc => acc.type === 'demo' && acc.isVisible)
+  const liveAccounts = accounts.filter(acc => acc.type === 'live' && acc.isVisible)
 
   useEffect(() => {
     // Set initial selected account
@@ -110,6 +119,13 @@ export default function LeftSidebar({ selectedAccount, onAccountSelect }: LeftSi
 
   const handleUpdateAccounts = (updatedAccounts: Account[]) => {
     setAccounts(updatedAccounts)
+  }
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
   }
 
   return (
@@ -143,46 +159,69 @@ export default function LeftSidebar({ selectedAccount, onAccountSelect }: LeftSi
                 <Settings size={18} className="text-gray-12" />
               </button>
             </div>
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="demo">
-                <AccordionTrigger className="text-sm font-normal">Demo Accounts</AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    {demoAccounts.map(account => (
-                      <button
-                        key={account.id}
-                        onClick={() => handleAccountClick(account)}
-                        className={`w-full flex justify-between items-center text-sm p-2 hover:bg-gray-3 rounded transition-colors ${
-                          selectedAccount?.id === account.id ? 'bg-gray-3 text-gray-12' : 'text-gray-11'
-                        }`}
-                      >
-                        <span>{account.accountNumber}</span>
-                        <span>{formatBalance(account.balance)}</span>
-                      </button>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="live">
-                <AccordionTrigger className="text-sm font-normal">Live Accounts</AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-2">
-                    {liveAccounts.map(account => (
-                      <button
-                        key={account.id}
-                        onClick={() => handleAccountClick(account)}
-                        className={`w-full flex justify-between items-center text-sm p-2 hover:bg-gray-3 rounded transition-colors ${
-                          selectedAccount?.id === account.id ? 'bg-gray-3 text-gray-12' : 'text-gray-11'
-                        }`}
-                      >
-                        <span>{account.accountNumber}</span>
-                        <span>{formatBalance(account.balance)}</span>
-                      </button>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <div className="space-y-2">
+              {/* Demo Accounts Section */}
+              <Collapsible
+                open={openSections.demo}
+                onOpenChange={() => toggleSection('demo')}
+                className="space-y-2"
+              >
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg p-2 text-sm font-medium hover:bg-gray-3">
+                  <span>Demo Accounts</span>
+                  <ChevronRight
+                    size={16}
+                    className={`text-gray-11 transition-transform duration-200 ${
+                      openSections.demo ? 'rotate-90' : ''
+                    }`}
+                  />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-1">
+                  {demoAccounts.map(account => (
+                    <button
+                      key={account.id}
+                      onClick={() => handleAccountClick(account)}
+                      className={`w-full flex justify-between items-center text-sm p-2 hover:bg-gray-3 rounded-lg transition-colors ${
+                        selectedAccount?.id === account.id ? 'bg-gray-4 text-gray-12' : 'text-gray-11'
+                      }`}
+                    >
+                      <span>{account.accountNumber}</span>
+                      <span>{formatBalance(account.balance)}</span>
+                    </button>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Live Accounts Section */}
+              <Collapsible
+                open={openSections.live}
+                onOpenChange={() => toggleSection('live')}
+                className="space-y-2"
+              >
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg p-2 text-sm font-medium hover:bg-gray-3">
+                  <span>Live Accounts</span>
+                  <ChevronRight
+                    size={16}
+                    className={`text-gray-11 transition-transform duration-200 ${
+                      openSections.live ? 'rotate-90' : ''
+                    }`}
+                  />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-1">
+                  {liveAccounts.map(account => (
+                    <button
+                      key={account.id}
+                      onClick={() => handleAccountClick(account)}
+                      className={`w-full flex justify-between items-center text-sm p-2 hover:bg-gray-3 rounded-lg transition-colors ${
+                        selectedAccount?.id === account.id ? 'bg-gray-4 text-gray-12' : 'text-gray-11'
+                      }`}
+                    >
+                      <span>{account.accountNumber}</span>
+                      <span>{formatBalance(account.balance)}</span>
+                    </button>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
           </div>
         )}
 

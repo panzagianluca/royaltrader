@@ -1,12 +1,11 @@
-import { ThemeOptions } from '@radix-ui/themes'
+import { Theme } from '@radix-ui/themes'
 
-export const themeConfig: ThemeOptions = {
-  hasBackground: true,
-  scaling: '100%',
-  radius: 'medium',
+export const themeConfig = {
+  appearance: 'dark',
   accentColor: 'violet',
   grayColor: 'gray',
-  appearance: 'inherit'
+  radius: 'medium',
+  scaling: '100%'
 } as const
 
 export const customColors = {

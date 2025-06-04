@@ -1,7 +1,6 @@
-import { Sun, Moon, Ruler, CandlestickChart, LineChart, Settings, Bell, User, UserCircle2, Laptop2, LogOut, Languages } from 'lucide-react'
+import { Sun, Moon, Bell, User, UserCircle2, Laptop2, LogOut, Languages } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import {
   AlertDialog,
@@ -15,20 +14,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useState, useEffect } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,

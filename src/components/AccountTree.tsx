@@ -49,11 +49,6 @@ export default function AccountTree({ collapsed = false, onManageAccounts, accou
   }
 
   if (collapsed) {
-    const activeAccountData = accounts
-      .flatMap(group => group.programs)
-      .flatMap(program => program.accounts)
-      .find(account => account.id === activeAccount)
-
     return (
       <div className="p-2">
         <div className="bg-accent-blue/10 rounded-lg p-2">

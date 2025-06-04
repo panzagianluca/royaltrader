@@ -8,18 +8,19 @@ import * as Checkbox from '@radix-ui/react-checkbox'
 import { Button, SegmentedControl } from '@radix-ui/themes'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Input } from "@/components/ui/input"
 
 export default function OrderEntry() {
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market')
   const [side, setSide] = useState<'buy' | 'sell'>('buy')
-  const [lotSize, setLotSize] = useState(0.01)
+  const [lots, setLots] = useState(0.1)
   const [limitPrice, setLimitPrice] = useState('')
-  const [stopLoss, setStopLoss] = useState('1.2345')
-  const [takeProfit, setTakeProfit] = useState('1.2345')
+  const [stopLoss, setStopLoss] = useState('')
+  const [takeProfit, setTakeProfit] = useState('')
   const [isStopLossEnabled, setIsStopLossEnabled] = useState(false)
   const [isTakeProfitEnabled, setIsTakeProfitEnabled] = useState(false)
-  const [currentPrice, setCurrentPrice] = useState('1.2345') // This would come from your price feed
-  const [balance, setBalance] = useState(10000) // This would come from your account balance
+  const [currentPrice, setCurrentPrice] = useState('1.0850')
+  const [balance, setBalance] = useState(100000)
   const [stopLossDistance, setStopLossDistance] = useState('0')
   const [stopLossPnL, setStopLossPnL] = useState('')
   const [stopLossPnLPercentage, setStopLossPnLPercentage] = useState('')
@@ -29,8 +30,8 @@ export default function OrderEntry() {
 
   // Calculate margin and risk percentage based on lot size
   const marginInfo = useMemo(() => {
-    const riskPercentage = (lotSize / 1) * 100 // 1 lot = 100%
-    const marginValue = lotSize * 1000 // Each 0.1 lot = $100
+    const riskPercentage = (lots / 1) * 100 // 1 lot = 100%
+    const marginValue = lots * 1000 // Each 0.1 lot = $100
 
     // Determine color based on risk level
     let color = 'bg-green-500'
@@ -46,10 +47,10 @@ export default function OrderEntry() {
       color,
       isHigh: riskPercentage >= 100
     }
-  }, [lotSize])
+  }, [lots])
 
   const handleLotSizeChange = useCallback((direction: 'increase' | 'decrease') => {
-    setLotSize(prev => {
+    setLots(prev => {
       const step = prev < 0.1 ? 0.01 : 0.1
       const newValue = direction === 'increase' ? prev + step : prev - step
       return Math.max(0.01, Math.min(100, Number(newValue.toFixed(2))))
@@ -70,7 +71,7 @@ export default function OrderEntry() {
     const priceNum = parseFloat(price)
     const currentPriceNum = parseFloat(currentPrice)
     const distance = Math.abs(priceNum - currentPriceNum)
-    const pnl = distance * lotSize * 1000 // Simplified PnL calculation
+    const pnl = distance * lots * 1000 // Simplified PnL calculation
     const pnlPercentage = (pnl / balance) * 100 // PnL as percentage of balance
     
     return {
@@ -78,7 +79,7 @@ export default function OrderEntry() {
       pnl: formatCurrency(pnl),
       pnlPercentage: pnlPercentage.toFixed(2)
     }
-  }, [currentPrice, lotSize, balance])
+  }, [currentPrice, lots, balance])
 
   return (
     <div className="p-4 space-y-4 bg-background-primary">
@@ -170,11 +171,11 @@ export default function OrderEntry() {
           <input
             id="lot-size"
             type="text"
-            value={lotSize}
+            value={lots}
             onChange={(e) => {
               const value = parseFloat(e.target.value)
               if (!isNaN(value) && value >= 0.01) {
-                setLotSize(Number(value.toFixed(2)))
+                setLots(Number(value.toFixed(2)))
               }
             }}
             className="flex-1 text-center bg-transparent border-none focus:outline-none text-gray-700 dark:text-gray-300"

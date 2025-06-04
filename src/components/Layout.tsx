@@ -1,54 +1,70 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Theme } from '@radix-ui/themes'
 import LeftSidebar from './LeftSidebar'
 import RightSidebar from './RightSidebar'
-import Chart from './Chart'
 import TopNav from './TopNav'
+import Chart from './Chart'
 import BottomBanner from './BottomBanner'
 import { themeConfig } from '../styles/theme'
 import '@radix-ui/themes/styles.css'
 import '../styles/theme.css'
 
-export default function Layout() {
-  const [darkMode, setDarkMode] = useState(false)
-  const [isClient, setIsClient] = useState(false)
-  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
+interface Account {
+  id: string
+  accountNumber: string
+  balance: number
+  type: 'demo' | 'live'
+  isVisible?: boolean
+  isActive?: boolean
+}
 
-  useEffect(() => {
-    setIsClient(true)
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [darkMode])
+export default function Layout() {
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
+  const [bottomBannerExpanded, setBottomBannerExpanded] = useState(true)
+  const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined)
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check localStorage for saved preference
+    const saved = localStorage.getItem('darkMode')
+    return saved ? JSON.parse(saved) : true // Default to dark mode
+  })
 
   return (
-    <div className={`flex flex-col h-screen relative ${darkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
-      <TopNav darkMode={darkMode} setDarkMode={setDarkMode} />
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main content area */}
-        <div className="flex-1 flex">
-          <div className="flex-1">
-            {isClient ? <Chart darkMode={darkMode} /> : <div className="flex-1 bg-white dark:bg-gray-900" />}
-          </div>
-          <RightSidebar 
-            collapsed={rightSidebarCollapsed}
-            onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+    <Theme 
+      {...themeConfig} 
+      appearance={darkMode ? 'dark' : 'light'}
+      accentColor="violet"
+      grayColor="gray"
+      radius="medium"
+      scaling="100%"
+    >
+      <div className="flex h-screen overflow-hidden bg-background-primary">
+        <LeftSidebar 
+          selectedAccount={selectedAccount} 
+          onAccountSelect={setSelectedAccount} 
+        />
+        <div className="flex-1 flex flex-col">
+          <TopNav 
+            darkMode={darkMode} 
+            setDarkMode={setDarkMode} 
+            selectedAccount={selectedAccount}
           />
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className={`flex flex-1 min-h-0 transition-all duration-500 ease-in-out ${bottomBannerExpanded ? 'h-[calc(100%-200px)]' : 'h-[calc(100%-40px)]'}`}>
+              <div className="flex-1">
+                <Chart darkMode={darkMode} />
+              </div>
+              <RightSidebar 
+                collapsed={rightSidebarCollapsed}
+                onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+              />
+            </div>
+            <BottomBanner 
+              isExpanded={bottomBannerExpanded}
+              onToggleExpand={() => setBottomBannerExpanded(!bottomBannerExpanded)}
+            />
+          </div>
         </div>
       </div>
-      <BottomBanner />
-      
-      {/* LeftSidebar positioned absolutely to overlap */}
-      <div className="absolute top-0 left-0 h-full z-10">
-        <LeftSidebar />
-      </div>
-      
-      {/* RightSidebar positioned absolutely to overlap */}
-      <div className="absolute top-0 right-0 h-full z-10">
-        <RightSidebar />
-      </div>
-    </div>
+    </Theme>
   )
 }
