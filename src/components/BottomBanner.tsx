@@ -8,7 +8,7 @@ interface BottomBannerProps {
 export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBannerProps) {
   return (
     <div className={`transition-all duration-500 ease-in-out ${isExpanded ? 'h-[200px]' : 'h-[40px]'}`}>
-      <div className="h-full bg-background-primary border-t border-background-alpha">
+      <div className="h-full bg-background border-t border-background-alpha">
         <div className="flex items-center justify-between h-[40px] px-4">
           <h2 className="text-sm font-medium">Trading Terminal</h2>
           <button 

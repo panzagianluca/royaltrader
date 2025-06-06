@@ -1,26 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Theme } from '@radix-ui/themes'
-import LeftSidebar from './components/LeftSidebar'
+import { AppSidebar } from './components/app-sidebar'
 import RightSidebar from './components/RightSidebar'
 import TopNav from './components/TopNav'
 import Chart from './components/Chart'
 import BottomBanner from './components/BottomBanner'
 import { themeConfig } from './styles/theme'
+import { SidebarProvider } from "@/components/ui/sidebar"
 import './styles/theme.css'
-
-interface Account {
-  id: string
-  accountNumber: string
-  balance: number
-  type: 'demo' | 'live'
-  isVisible?: boolean
-  isActive?: boolean
-}
+import { Account } from './data/accounts'
 
 function App() {
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
   const [bottomBannerExpanded, setBottomBannerExpanded] = useState(true)
-  const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined)
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage for saved preference
     const saved = localStorage.getItem('darkMode')
@@ -46,11 +39,15 @@ function App() {
       radius="medium"
       scaling="100%"
     >
-      <div className="flex h-screen overflow-hidden bg-background-primary">
-        <LeftSidebar 
-          selectedAccount={selectedAccount} 
-          onAccountSelect={setSelectedAccount} 
-        />
+      <div className="flex h-screen overflow-hidden bg-background">
+        <div className="flex">
+          <SidebarProvider defaultOpen={true}>
+            <AppSidebar 
+              selectedAccount={selectedAccount}
+              onAccountSelect={setSelectedAccount}
+            />
+          </SidebarProvider>
+        </div>
         <div className="flex-1 flex flex-col">
           <TopNav 
             darkMode={darkMode} 

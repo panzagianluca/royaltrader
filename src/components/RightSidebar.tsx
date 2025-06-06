@@ -42,10 +42,10 @@ export default function RightSidebar({ collapsed, onToggleCollapse }: RightSideb
   }, [isResizing])
 
   return (
-    <div className={`right-sidebar ${collapsed ? 'w-0' : 'w-96'} h-full border-l border-gray-7 bg-background-primary flex flex-col transition-all duration-500 ease-in-out relative`}>
+    <div className={`right-sidebar ${collapsed ? 'w-0' : 'w-96'} h-full border-l border-gray-7 bg-background flex flex-col transition-all duration-500 ease-in-out relative`}>
       <button 
         onClick={onToggleCollapse}
-        className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-background-primary border border-gray-7 rounded-full flex items-center justify-center shadow-md hover:bg-gray-3 transition-all duration-300 ease-in-out z-10"
+        className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-background border border-gray-7 rounded-full flex items-center justify-center shadow-md hover:bg-gray-3 transition-all duration-300 ease-in-out z-10"
       >
         {collapsed ? 
           <ChevronLeft size={18} className="text-gray-12" /> : 

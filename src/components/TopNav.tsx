@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Account } from '@/data/accounts'
 
 const MOCK_NOTIFICATIONS = [
   {
@@ -96,19 +97,10 @@ const MOCK_NOTIFICATIONS = [
   }
 ]
 
-interface Account {
-  id: string
-  accountNumber: string
-  balance: number
-  type: 'demo' | 'live'
-  isVisible?: boolean
-  isActive?: boolean
-}
-
 interface TopNavProps {
   darkMode: boolean
   setDarkMode: (mode: boolean) => void
-  selectedAccount?: Account
+  selectedAccount?: Account | null
 }
 
 interface Language {
@@ -196,7 +188,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   }
 
   return (
-    <div className="flex items-center justify-between p-2 border-b border-gray-7 bg-background-primary">
+    <div className="flex items-center justify-between p-2 border-b border-gray-7 bg-background">
       <div className="flex items-center space-x-4">
         
         {/* Chart Tools */}
@@ -227,7 +219,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" className="cursor-default">
-                  Equity: {selectedAccount ? formatBalance(selectedAccount.balance) : '$0'}
+                  Equity: {selectedAccount ? formatBalance(selectedAccount.equity) : '$0'}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -238,7 +230,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" className="cursor-default">
-                  Daily PnL: $0
+                  Daily PnL: {selectedAccount ? formatBalance(selectedAccount.dailyPnl) : '$0'}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
