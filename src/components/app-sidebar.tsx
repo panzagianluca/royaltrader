@@ -21,10 +21,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import {
-  Select,
-  SelectContent,
-} from "@/components/ui/select"
 import AccountManageModal from "./AccountManageModal"
 import { accountsData, Account } from "@/data/accounts";
 

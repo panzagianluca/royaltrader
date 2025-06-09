@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Theme } from '@radix-ui/themes'
-import LeftSidebar from './LeftSidebar'
+import { AppSidebar as LeftSidebar } from './app-sidebar'
 import RightSidebar from './RightSidebar'
 import TopNav from './TopNav'
 import Chart from './Chart'
@@ -11,15 +11,7 @@ import { Button } from "@/components/ui/button"
 import { PanelLeft } from "lucide-react"
 import '@radix-ui/themes/styles.css'
 import '../styles/theme.css'
-
-interface Account {
-  id: string
-  accountNumber: string
-  balance: number
-  type: 'demo' | 'live'
-  isVisible?: boolean
-  isActive?: boolean
-}
+import { Account } from "@/data/accounts";
 
 function LeftSidebarToggleButton() {
   const { toggleSidebar, state } = useSidebar();
@@ -34,7 +26,7 @@ function LeftSidebarToggleButton() {
 export default function Layout() {
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
   const [bottomBannerExpanded, setBottomBannerExpanded] = useState(true)
-  const [selectedAccount, setSelectedAccount] = useState<Account | undefined>(undefined)
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode')
     return saved ? JSON.parse(saved) : true
