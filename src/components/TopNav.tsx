@@ -91,6 +91,7 @@ type ConnectionStatus = 'Good' | 'Regular' | 'Bad' | 'Disconnected';
 export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNavProps) {
   const [isLocked, setIsLocked] = useState(false)
   const [timeoutString, setTimeoutString] = useState("")
+  const [lockCountdown, setLockCountdown] = useState("")
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
   const [showBadge, setShowBadge] = useState(true)
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('Good');
@@ -102,6 +103,29 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(balance)
+  }
+
+  const calculateLockCountdown = () => {
+    const now = new Date()
+    const target = new Date()
+    target.setHours(17, 0, 0)
+    if (now > target) {
+      target.setDate(target.getDate() + 1)
+    }
+    const diff = target.getTime() - now.getTime()
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+    
+    let countdown = ""
+    if (hours > 0) {
+      countdown += `${hours} hour${hours > 1 ? 's' : ''}`
+    }
+    if (minutes > 0) {
+      if (countdown) countdown += " and "
+      countdown += `${minutes} minute${minutes > 1 ? 's' : ''}`
+    }
+    
+    setLockCountdown(countdown || "the rest of the trading day");
   }
 
   useEffect(() => {
@@ -118,7 +142,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-      setTimeoutString(`${hours}h ${minutes}m ${seconds}s Left`)
+      setTimeoutString(`${hours}h ${minutes}m ${seconds}s`)
     }
     
     updateTimeout()
@@ -239,29 +263,36 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button disabled={isLocked} onClick={() => setIsLocked(true)} variant="destructive">
-              Lock Account for the day
+            <Button disabled={isLocked} variant="destructive" onClick={calculateLockCountdown}>
+              {isLocked ? `Account Locked, Time Left ${timeoutString}` : 'Lock Account for the day'}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. You will not be able to trade on this account for the remainder of the trading day.
+              <AlertDialogTitle>Confirm Account Lock</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-4">
+                  <p>
+                    Locking your account will disable all trading for the next {lockCountdown}. This decision is final and cannot be reversed during this period.
+                  </p>
+                  <div>
+                    <h3 className="font-semibold">What this means:</h3>
+                    <ul className="list-disc list-inside text-sm text-gray-500">
+                      <li>You will not be able to open any new trades.</li>
+                      <li>Your account will automatically unlock after {lockCountdown}.</li>
+                    </ul>
+                  </div>
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setIsLocked(false)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => setIsLocked(true)}>Confirm</AlertDialogAction>
+              <AlertDialogAction asChild>
+                <Button onClick={() => setIsLocked(true)} variant="destructive">Yes, Lock Account</Button>
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
-        {isLocked && (
-          <Badge variant="secondary" className="px-3 py-1 text-sm">
-            {timeoutString}
-          </Badge>
-        )}
       </div>
 
       <div className="flex items-center space-x-2">
