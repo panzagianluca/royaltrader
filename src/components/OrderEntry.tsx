@@ -75,14 +75,17 @@ export default function OrderEntry() {
   }, [currentPrice, lots, balance])
 
   return (
-    <div className="p-4 space-y-4 bg-background rounded-md h-full text-sm">
+    <div className={cn(
+      "p-4 space-y-4 bg-background rounded-md h-full text-sm",
+      orderType === 'limit' ? "overflow-y-auto" : ""
+    )}>
       {/* Order Type Selector */}
       <div className="w-full">
         <SegmentedControl.Root 
           value={orderType}
           onValueChange={(value: string) => setOrderType(value as 'market' | 'limit')}
-          size="3"
-          className="w-full [&>button]:flex-1"
+          size="2"
+          className="w-full [&>button]:flex-1 text-xs"
         >
           <SegmentedControl.Item value="market">MARKET</SegmentedControl.Item>
           <SegmentedControl.Item value="limit">LIMIT</SegmentedControl.Item>
@@ -94,8 +97,8 @@ export default function OrderEntry() {
         <SegmentedControl.Root 
           value={side}
           onValueChange={(value: string) => setSide(value as 'buy' | 'sell')}
-          size="3"
-          className="w-full [&>button]:flex-1 [&>button]:transition-colors [&>button]:duration-200"
+          size="2"
+          className="w-full [&>button]:flex-1 [&>button]:transition-colors [&>button]:duration-200 text-xs"
         >
           <SegmentedControl.Item 
             value="buy"
