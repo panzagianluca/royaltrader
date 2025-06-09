@@ -94,7 +94,6 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
   const [showBadge, setShowBadge] = useState(true)
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('Good');
-  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const formatBalance = (balance: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -143,11 +142,9 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
-      setIsFullScreen(true);
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
-        setIsFullScreen(false);
       }
     }
   };
