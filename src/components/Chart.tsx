@@ -39,22 +39,24 @@ export default function Chart({ darkMode }: ChartProps) {
         new (window as any).TradingView.widget({
           container_id: 'tradingview_chart',
           symbol: 'FX:EURUSD',
-          interval: '1',
+          interval: '15',
           theme: darkMode ? 'dark' : 'light',
           style: '1',
           locale: 'en',
           toolbar_bg: darkMode ? '#1e293b' : '#f1f3f6',
           enable_publishing: false,
           allow_symbol_change: true,
-          save_image: false,
+          save_image: true,
           height: '100%',
           width: '100%',
+          "gridColor": "rgba(242, 242, 242, 0)",
           hide_side_toolbar: false,
           withdateranges: true,
           hide_legend: false,
           show_popup_button: true,
           popup_width: '1000',
           popup_height: '650',
+          "hide_volume": true,
         })
         setIsLoading(false)
       } catch (error) {
