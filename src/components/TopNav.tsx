@@ -188,7 +188,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   }
 
   return (
-    <div className="flex items-center justify-between p-2 border-b border-gray-7 bg-background">
+    <div className="flex items-center justify-between p-2">
       <div className="flex items-center space-x-4">
         
         {/* Chart Tools */}

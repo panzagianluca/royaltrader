@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Theme } from '@radix-ui/themes'
 import { AppSidebar as LeftSidebar } from './app-sidebar'
-import RightSidebar from './RightSidebar'
 import TopNav from './TopNav'
 import Chart from './Chart'
+import Watchlist from './Watchlist'
+import OrderEntry from './OrderEntry'
 import BottomBanner from './BottomBanner'
 import { themeConfig } from '../styles/theme'
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar"
@@ -24,13 +25,21 @@ function LeftSidebarToggleButton() {
 }
 
 export default function Layout() {
-  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false)
   const [bottomBannerExpanded, setBottomBannerExpanded] = useState(true)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode')
     return saved ? JSON.parse(saved) : true
   })
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+    localStorage.setItem('darkMode', JSON.stringify(darkMode))
+  }, [darkMode])
 
   return (
     <Theme 
@@ -41,14 +50,20 @@ export default function Layout() {
       radius="medium"
       scaling="100%"
     >
-      <SidebarProvider defaultOpen={true}> 
-        <div className="flex h-screen overflow-hidden bg-background-primary">
+      <SidebarProvider defaultOpen={true}>
+        {/* Main App Container */}
+        <div className="flex h-screen bg-background w-full">
+          {/* Column A: Left Sidebar */}
           <LeftSidebar 
             selectedAccount={selectedAccount} 
             onAccountSelect={setSelectedAccount} 
           />
+          
+          {/* Column B: Main Content Area */}
           <div className="flex-1 flex flex-col">
-            <div className="flex items-center border-b border-gray-7 bg-background-primary">
+            
+            {/* Row B.1: Top Navigation Bar */}
+            <div style={{height: '50px'}} className="flex items-center px-1 pt-1">
               <LeftSidebarToggleButton />
               <div className="flex-1">
                 <TopNav 
@@ -58,16 +73,27 @@ export default function Layout() {
                 />
               </div>
             </div>
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className={`flex flex-1 min-h-0 transition-all duration-500 ease-in-out ${bottomBannerExpanded ? 'h-[calc(100%-200px)]' : 'h-[calc(100%-40px)]'}`}>
-                <div className="flex-1">
-                  <Chart darkMode={darkMode} />
-                </div>
-                <RightSidebar 
-                  collapsed={rightSidebarCollapsed}
-                  onToggleCollapse={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
-                />
+
+            {/* Row B.2: Middle Section (Chart + Right Sidebar) */}
+            <div className="flex-1 flex flex-row p-1 gap-1 min-h-0">
+              {/* Sub-Column 1: TradingView Chart */}
+              <div className="flex-1 bg-background-primary rounded-2xl p-0.5">
+                <Chart darkMode={darkMode} />
               </div>
+
+              {/* Sub-Column 2: Right Sidebar */}
+              <div style={{flexBasis: '20%'}} className="flex flex-col gap-1">
+                <div className="flex-1 min-h-0 bg-background-primary rounded-2xl p-1">
+                  <Watchlist />
+                </div>
+                <div className="flex-1 min-h-0 bg-background-primary rounded-2xl p-1">
+                  <OrderEntry />
+                </div>
+              </div>
+            </div>
+
+            {/* Row B.3: Bottom Terminal */}
+            <div style={{height: '250px'}} className="p-1">
               <BottomBanner 
                 isExpanded={bottomBannerExpanded}
                 onToggleExpand={() => setBottomBannerExpanded(!bottomBannerExpanded)}
@@ -79,3 +105,4 @@ export default function Layout() {
     </Theme>
   )
 }
+

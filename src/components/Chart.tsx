@@ -74,8 +74,8 @@ export default function Chart({ darkMode }: ChartProps) {
   }, [darkMode])
 
   return (
-    <div className="w-full h-full bg-white dark:bg-gray-800">
-      <div className="h-full">
+    <div className="w-full h-full rounded-2xl overflow-hidden border border-border">
+      <div className="h-full ">
         <div className="tradingview-widget-container h-full">
           {isLoading && (
             <div className="flex items-center justify-center h-full">
