@@ -11,6 +11,7 @@ import {
 export function NavProjects({
   title = "Projects",
   projects,
+  navigateTo,
 }: {
   title?: string
   projects: {
@@ -19,6 +20,7 @@ export function NavProjects({
     icon: LucideIcon
     isActive?: boolean
   }[]
+  navigateTo: (page: string) => void
 }) {
   return (
     <SidebarGroup>
@@ -30,8 +32,9 @@ export function NavProjects({
               asChild
               data-active={item.isActive}
               tooltip={item.name}
+              onClick={() => navigateTo(item.url)}
             >
-              <a href={item.url}>
+              <a href="#">
                 <item.icon />
                 <span>{item.name}</span>
               </a>

@@ -65,28 +65,28 @@ const data = {
   projects: [
     {
       name: "Chart",
-      url: "#",
+      url: "chart",
       icon: CandlestickChart,
       isActive: true,
     },
     {
       name: "Risk Management",
-      url: "#",
+      url: "risk-management",
       icon: ShieldCheck,
     },
     {
       name: "News Calendar",
-      url: "#",
+      url: "news-calendar",
       icon: Newspaper,
     },
     {
       name: "History & Analysis",
-      url: "#",
+      url: "history-analysis",
       icon: History,
     },
     {
       name: "Settings",
-      url: "#",
+      url: "settings",
       icon: Settings2,
     },
   ],
@@ -95,9 +95,11 @@ const data = {
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   selectedAccount: Account | null;
   onAccountSelect: (account: Account) => void;
+  navigateTo: (page: string) => void;
+  currentPage: string;
 }
 
-export function AppSidebar({ selectedAccount, onAccountSelect, ...props }: AppSidebarProps) {
+export function AppSidebar({ selectedAccount, onAccountSelect, navigateTo, currentPage, ...props }: AppSidebarProps) {
   const [isManageModalOpen, setIsManageModalOpen] = React.useState(false)
   const [accounts, setAccounts] = React.useState(accountsData);
 
@@ -110,6 +112,11 @@ export function AppSidebar({ selectedAccount, onAccountSelect, ...props }: AppSi
   };
 
   const visibleAccounts = accounts.filter(account => account.isVisible);
+
+  const projectsWithActiveState = data.projects.map(project => ({
+    ...project,
+    isActive: project.url === currentPage,
+  }));
 
   return (
     <>
@@ -124,7 +131,7 @@ export function AppSidebar({ selectedAccount, onAccountSelect, ...props }: AppSi
             accounts={visibleAccounts}
             onAccountClick={onAccountSelect}
           />
-          <NavProjects title="Navigation" projects={data.projects} />
+          <NavProjects title="Navigation" projects={projectsWithActiveState} navigateTo={navigateTo} />
         </SidebarContent>
         <SidebarFooter>
           <NavUser user={data.user} />

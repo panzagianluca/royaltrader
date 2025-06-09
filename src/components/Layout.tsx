@@ -6,6 +6,7 @@ import Chart from './Chart'
 import Watchlist from './Watchlist'
 import OrderEntry from './OrderEntry'
 import BottomBanner from './BottomBanner'
+import NewsCalendar from './NewsCalendar'
 import { themeConfig } from '../styles/theme'
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ function LeftSidebarToggleButton() {
 }
 
 export default function Layout() {
+  const [currentPage, setCurrentPage] = useState('chart');
   const [bottomBannerExpanded, setBottomBannerExpanded] = useState(true)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
   const [darkMode, setDarkMode] = useState(() => {
@@ -41,6 +43,43 @@ export default function Layout() {
     localStorage.setItem('darkMode', JSON.stringify(darkMode))
   }, [darkMode])
 
+  const navigateTo = (page: string) => {
+    setCurrentPage(page);
+  };
+
+  const renderContent = () => {
+    switch (currentPage) {
+      case 'chart':
+        return (
+          <>
+            <div className="flex-1 flex flex-row p-1 gap-1 min-h-0">
+              <div className="flex-1 bg-background-primary rounded-md p-0.5">
+                <Chart darkMode={darkMode} />
+              </div>
+              <div style={{flexBasis: '20%'}} className="flex flex-col gap-1">
+                <div className="flex-1 min-h-0 bg-background-primary rounded-2xl p-1">
+                  <Watchlist />
+                </div>
+                <div className="flex-1 min-h-0 bg-background-primary rounded-2xl p-1">
+                  <OrderEntry />
+                </div>
+              </div>
+            </div>
+            <div className={`p-1 transition-all duration-500 ease-in-out ${bottomBannerExpanded ? 'h-[250px]' : 'h-[56px]'}`}>
+              <BottomBanner 
+                isExpanded={bottomBannerExpanded}
+                onToggleExpand={() => setBottomBannerExpanded(!bottomBannerExpanded)}
+              />
+            </div>
+          </>
+        );
+      case 'news-calendar':
+        return <NewsCalendar darkMode={darkMode} />;
+      default:
+        return <div>Page not found</div>;
+    }
+  };
+
   return (
     <Theme 
       {...themeConfig} 
@@ -51,18 +90,15 @@ export default function Layout() {
       scaling="100%"
     >
       <SidebarProvider defaultOpen={true}>
-        {/* Main App Container */}
         <div className="flex h-screen bg-sidebar w-full">
-          {/* Column A: Left Sidebar */}
           <LeftSidebar 
             selectedAccount={selectedAccount} 
             onAccountSelect={setSelectedAccount} 
+            navigateTo={navigateTo}
+            currentPage={currentPage}
           />
           
-          {/* Column B: Main Content Area */}
           <div className="flex-1 flex flex-col">
-            
-            {/* Row B.1: Top Navigation Bar */}
             <div style={{height: '50px'}} className="flex items-center px-1 pt-1">
               <LeftSidebarToggleButton />
               <div className="flex-1">
@@ -73,32 +109,7 @@ export default function Layout() {
                 />
               </div>
             </div>
-
-            {/* Row B.2: Middle Section (Chart + Right Sidebar) */}
-            <div className="flex-1 flex flex-row p-1 gap-1 min-h-0">
-              {/* Sub-Column 1: TradingView Chart */}
-              <div className="flex-1 bg-background-primary rounded-md p-0.5">
-                <Chart darkMode={darkMode} />
-              </div>
-
-              {/* Sub-Column 2: Right Sidebar */}
-              <div style={{flexBasis: '20%'}} className="flex flex-col gap-1">
-                <div className="flex-1 min-h-0 bg-background-primary rounded-2xl p-1">
-                  <Watchlist />
-                </div>
-                <div className="flex-1 min-h-0 bg-background-primary rounded-2xl p-1">
-                  <OrderEntry />
-                </div>
-              </div>
-            </div>
-
-            {/* Row B.3: Bottom Terminal */}
-            <div className={`p-1 transition-all duration-500 ease-in-out ${bottomBannerExpanded ? 'h-[250px]' : 'h-[56px]'}`}>
-              <BottomBanner 
-                isExpanded={bottomBannerExpanded}
-                onToggleExpand={() => setBottomBannerExpanded(!bottomBannerExpanded)}
-              />
-            </div>
+            {renderContent()}
           </div>
         </div>
       </SidebarProvider>
