@@ -1,5 +1,7 @@
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useState } from 'react';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import PositionsTable from './PositionsTable';
 
 interface BottomBannerProps {
   isExpanded: boolean
@@ -18,19 +20,15 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between h-[40px] px-4">
           <div className="flex items-center">
-            {isExpanded && tabs.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors duration-300 ease-in-out rounded-t-md ${
-                  activeTab === tab 
-                    ? 'bg-background-alpha text-primary' 
-                    : 'text-muted-foreground hover:bg-background-alpha/50'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            {isExpanded && (
+              <ToggleGroup type="single" value={activeTab} onValueChange={(value) => setActiveTab(value as Tab)}>
+                {tabs.map(tab => (
+                  <ToggleGroupItem key={tab} value={tab} aria-label={`Select ${tab}`} className="data-[state=on]:bg-transparent data-[state=on]:border-b-2 data-[state=on]:border-primary data-[state=on]:text-primary rounded-none">
+                    {tab}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            )}
           </div>
           <button 
             onClick={onToggleExpand}
@@ -42,25 +40,10 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
             }
           </button>
         </div>
-        <div className={`flex-1 transition-all duration-500 ease-in-out ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`flex-1 transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
           {isExpanded && (
             <div className="p-4 h-full">
-              {activeTab === 'Positions' && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-background-alpha/50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium mb-2">Open Positions</h3>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                  <div className="bg-background-alpha/50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium mb-2">Pending Orders</h3>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                  <div className="bg-background-alpha/50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium mb-2">Account Balance</h3>
-                    <p className="text-2xl font-bold">$0.00</p>
-                  </div>
-                </div>
-              )}
+              {activeTab === 'Positions' && <PositionsTable />}
               {activeTab === 'Orders' && <div>Orders Content</div>}
               {activeTab === 'History' && <div>History Content</div>}
               {activeTab === 'Alerts' && <div>Alerts Content</div>}
