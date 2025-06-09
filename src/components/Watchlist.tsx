@@ -55,10 +55,9 @@ export default function Watchlist() {
   })
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background rounded-md text-sm">
       <div className="p-4">
-        <h2 className="text-lg font-semibold mb-2">Watchlists</h2>
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -87,8 +86,8 @@ export default function Watchlist() {
         <ScrollArea className="h-full">
           <div className="pr-4">
             <table className="w-full">
-              <thead className="sticky top-0 bg-background-primary z-10">
-                <tr className="text-left text-sm text-gray-500 dark:text-gray-400">
+              <thead className="sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+                <tr className="text-left text-xs text-gray-500 dark:text-gray-400">
                   <th className="p-2 w-8"></th>
                   <th className="p-2">Symbol</th>
                   <th className="p-2">Price</th>

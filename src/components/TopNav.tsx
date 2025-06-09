@@ -1,4 +1,4 @@
-import { Sun, Moon, Bell, User, UserCircle2, Laptop2, LogOut, Languages } from 'lucide-react'
+import { Sun, Moon, Bell, Maximize, Wifi, WifiOff } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -13,25 +13,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useState, useEffect } from 'react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Account } from '@/data/accounts'
 
 const MOCK_NOTIFICATIONS = [
@@ -103,32 +86,15 @@ interface TopNavProps {
   selectedAccount?: Account | null
 }
 
-interface Language {
-  code: string;
-  name: string;
-  flag: string;
-}
-
-const AVAILABLE_LANGUAGES: Language[] = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
-  { code: 'ko', name: '한국어', flag: '🇰🇷' },
-]
+type ConnectionStatus = 'Good' | 'Regular' | 'Bad' | 'Disconnected';
 
 export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNavProps) {
   const [isLocked, setIsLocked] = useState(false)
   const [timeoutString, setTimeoutString] = useState("")
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
   const [showBadge, setShowBadge] = useState(true)
-  const [activeProfileTab, setActiveProfileTab] = useState('User')
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('en')
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('Good');
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const formatBalance = (balance: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -145,7 +111,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
     const updateTimeout = () => {
       const now = new Date()
       const target = new Date()
-      target.setHours(17, 0, 0) // 5:00 PM
+      target.setHours(17, 0, 0)
       if (now > target) {
         target.setDate(target.getDate() + 1)
       }
@@ -157,13 +123,50 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
     }
     
     updateTimeout()
-    const interval = setInterval(updateTimeout, 1000) // Update every second
+    const interval = setInterval(updateTimeout, 1000)
     return () => clearInterval(interval)
   }, [isLocked])
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setConnectionStatus(prevStatus => {
+        if (prevStatus === 'Good') return 'Regular';
+        if (prevStatus === 'Regular') return 'Bad';
+        if (prevStatus === 'Bad') return 'Disconnected';
+        return 'Good';
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullScreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullScreen(false);
+      }
+    }
+  };
+
+  const getConnectionStatusIcon = () => {
+    switch (connectionStatus) {
+      case 'Good':
+        return <Wifi size={18} className="text-green-500" />;
+      case 'Regular':
+        return <Wifi size={18} className="text-yellow-500" />;
+      case 'Bad':
+        return <Wifi size={18} className="text-orange-500" />;
+      case 'Disconnected':
+        return <WifiOff size={18} className="text-red-500" />;
+    }
+  };
+
   const toggleTheme = () => {
     setDarkMode(!darkMode)
-    // Update document class for Tailwind dark mode
     if (!darkMode) {
       document.documentElement.classList.add('dark')
     } else {
@@ -176,22 +179,9 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
     setShowBadge(false)
   }
 
-  const handleLogout = () => {
-    // Implement logout logic here
-    console.log('Logging out...')
-  }
-
-  const handleLanguageChange = (value: string) => {
-    setSelectedLanguage(value)
-    // Here you would typically implement the language change logic
-    console.log('Language changed to:', value)
-  }
-
   return (
     <div className="flex items-center justify-between p-2">
       <div className="flex items-center space-x-4">
-        
-        {/* Chart Tools */}
         <div className="flex space-x-3">
           <TooltipProvider>
             <Tooltip>
@@ -248,259 +238,111 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
                 <p>Trading will be stopped if account drops below this level</p>
               </TooltipContent>
             </Tooltip>
-
-            {!isLocked ? (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="bg-red-50 hover:bg-red-100 border-red-200 text-red-600"
-                  >
-                    Lock Account for the day
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      You will disable trading for the rest of the day.
-                      This action cannot be undone.
-                      This means your account will be locked until the end of the trading day.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => setIsLocked(true)}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Continue
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            ) : (
-              <Badge 
-                variant="destructive" 
-                className="h-8 px-4 flex items-center text-xs my-auto"
-              >
-                Account Locked - {timeoutString}
-              </Badge>
-            )}
           </TooltipProvider>
         </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button disabled={isLocked} onClick={() => setIsLocked(true)} variant="destructive">
+              Lock Account for the day
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. You will not be able to trade on this account for the remainder of the trading day.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setIsLocked(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => setIsLocked(true)}>Confirm</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {isLocked && (
+          <Badge variant="secondary" className="px-3 py-1 text-sm">
+            {timeoutString}
+          </Badge>
+        )}
       </div>
 
-      <div className="flex items-center space-x-4">
-        {/* User Controls */}
-        <div className="flex space-x-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={toggleTheme}
-                  className="p-1 rounded hover:bg-gray-3 h-8 w-8 flex items-center justify-center"
-                >
-                  {darkMode ? <Sun size={18} className="text-gray-12" /> : <Moon size={18} className="text-gray-12" />}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+      <div className="flex items-center space-x-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className="relative">
-                <button className="p-1 rounded hover:bg-gray-3 h-8 w-8 flex items-center justify-center">
-                  <Bell size={18} className="text-gray-12" />
-                </button>
-                {showBadge && notifications.length > 0 && (
-                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {notifications.length}
-                  </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell size={18} />
+              {showBadge && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="max-w-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Notifications</AlertDialogTitle>
+              <AlertDialogDescription>
+                Here are your latest account activities and alerts.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <ScrollArea className="h-96">
+              <div className="pr-6">
+                {notifications.length > 0 ? (
+                  notifications.map(n => (
+                    <div key={n.id} className="py-3 border-b last:border-b-0">
+                      <p className="font-medium">{n.type.replace(/_/g, ' ')}</p>
+                      <p className="text-sm text-gray-500">{n.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">{n.date}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center py-8 text-gray-500">No new notifications.</p>
                 )}
               </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 bg-background dark:bg-[#0A0A0A] border-gray-7">
-              <div className="flex items-center justify-between pb-4">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium leading-none">Notifications</h4>
-                  <Badge variant="destructive" className="text-xs">
-                    {notifications.length} New
-                  </Badge>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearNotifications}
-                  className="text-xs hover:bg-gray-3"
-                >
-                  Clear all
-                </Button>
-              </div>
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className="text-sm border-b border-gray-7 last:border-0 pb-2 last:pb-0"
-                    >
-                      <p className="text-sm">{notification.message}</p>
-                      <p className="text-xs text-gray-11 mt-1">{notification.date}</p>
-                    </div>
-                  ))}
-                  {notifications.length === 0 && (
-                    <div className="text-sm text-gray-11 text-center py-4">
-                      No new notifications
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </PopoverContent>
-          </Popover>
+            </ScrollArea>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setShowBadge(false)}>Close</AlertDialogCancel>
+              <AlertDialogAction onClick={clearNotifications}>Clear All</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <button className="p-1 rounded hover:bg-gray-3 h-8 w-8 flex items-center justify-center">
-                <User size={18} className="text-gray-12" />
-              </button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] p-0 gap-0 bg-gray-2 border-gray-7">
-              <div className="border-b border-gray-7 px-6 py-4">
-                <h2 className="text-xl font-semibold text-gray-12">User Settings</h2>
-              </div>
-              <div className="flex h-[500px]">
-                {/* Side Menu */}
-                <div className="w-48 border-r border-gray-7 p-4 flex flex-col bg-gray-2">
-                  <div className="flex-1 space-y-1">
-                    <button
-                      onClick={() => setActiveProfileTab('User')}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                        activeProfileTab === 'User' ? 'bg-gray-4 text-gray-12' : 'hover:bg-gray-3 text-gray-11'
-                      }`}
-                    >
-                      <UserCircle2 size={18} />
-                      <span>User</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveProfileTab('Devices')}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                        activeProfileTab === 'Devices' ? 'bg-gray-4 text-gray-12' : 'hover:bg-gray-3 text-gray-11'
-                      }`}
-                    >
-                      <Laptop2 size={18} />
-                      <span>Devices</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveProfileTab('Language')}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
-                        activeProfileTab === 'Language' ? 'bg-gray-4 text-gray-12' : 'hover:bg-gray-3 text-gray-11'
-                      }`}
-                    >
-                      <Languages size={18} />
-                      <span>Language</span>
-                    </button>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-500/10"
-                  >
-                    <LogOut size={18} />
-                    <span>Logout</span>
-                  </button>
-                </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon">
+                {getConnectionStatusIcon()}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Connection Status: {connectionStatus}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
+                <Maximize size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Toggle Fullscreen</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-                {/* Content Area */}
-                <div className="flex-1 p-6 bg-gray-2">
-                  {activeProfileTab === 'User' && (
-                    <div>
-                      <h2 className="text-xl font-semibold mb-4 text-gray-12">User Profile</h2>
-                      <div className="space-y-4">
-                        <div className="p-4 rounded-lg border border-gray-7 bg-gray-3">
-                          <h3 className="text-sm font-medium text-gray-12 mb-2">Personal Information</h3>
-                          <div className="space-y-2 text-sm text-gray-11">
-                            <div>Email: user@example.com</div>
-                            <div>Name: John Doe</div>
-                            <div>Location: New York, USA</div>
-                          </div>
-                        </div>
-                        <div className="p-4 rounded-lg border border-gray-7 bg-gray-3">
-                          <h3 className="text-sm font-medium text-gray-12 mb-2">Preferences</h3>
-                          <div className="space-y-2 text-sm text-gray-11">
-                            <div>Language: English</div>
-                            <div>Time Zone: EST (UTC-5)</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {activeProfileTab === 'Devices' && (
-                    <div>
-                      <h2 className="text-xl font-semibold mb-4 text-gray-12">Connected Devices</h2>
-                      <div className="space-y-4">
-                        <div className="p-4 rounded-lg border border-gray-7 bg-gray-3">
-                          <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-sm font-medium text-gray-12">Current Device</h3>
-                            <span className="text-xs bg-green-500/10 text-green-500 px-2 py-1 rounded">Active</span>
-                          </div>
-                          <div className="space-y-1 text-sm text-gray-11">
-                            <div>Windows 10 - Chrome</div>
-                            <div>Last active: Now</div>
-                          </div>
-                        </div>
-                        <div className="p-4 rounded-lg border border-gray-7 bg-gray-3">
-                          <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-sm font-medium text-gray-12">Other Devices</h3>
-                            <span className="text-xs bg-gray-500/10 text-gray-11 px-2 py-1 rounded">Inactive</span>
-                          </div>
-                          <div className="space-y-1 text-sm text-gray-11">
-                            <div>iPhone 13 - Safari</div>
-                            <div>Last active: 2 hours ago</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {activeProfileTab === 'Language' && (
-                    <div>
-                      <h2 className="text-xl font-semibold mb-4 text-gray-12">Language Settings</h2>
-                      <div className="space-y-4">
-                        <div className="p-4 rounded-lg border border-gray-7 bg-gray-3">
-                          <h3 className="text-sm font-medium text-gray-12 mb-4">Select Your Language</h3>
-                          <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-                            <SelectTrigger className="w-full bg-gray-2 border-gray-7 ring-offset-gray-2 focus:ring-gray-7 [&>span]:text-gray-12 [&>span]:flex [&>span]:items-center [&>span]:gap-2">
-                              <SelectValue>
-                                {AVAILABLE_LANGUAGES.find(lang => lang.code === selectedLanguage)?.flag}{' '}
-                                {AVAILABLE_LANGUAGES.find(lang => lang.code === selectedLanguage)?.name}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent className="bg-gray-2 border-gray-7">
-                              {AVAILABLE_LANGUAGES.map((language) => (
-                                <SelectItem 
-                                  key={language.code} 
-                                  value={language.code}
-                                  className="flex items-center gap-2 text-gray-12 focus:bg-gray-4 focus:text-gray-12"
-                                >
-                                  <span className="mr-2">{language.flag}</span>
-                                  {language.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <p className="mt-4 text-sm text-gray-11">
-                            Select your preferred language. This will change the language of the entire application.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
       </div>
     </div>
   )

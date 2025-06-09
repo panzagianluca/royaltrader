@@ -74,7 +74,7 @@ export default function Chart({ darkMode }: ChartProps) {
   }, [darkMode])
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden border border-border">
+    <div className="w-full h-full rounded-md overflow-hidden border border-border">
       <div className="h-full ">
         <div className="tradingview-widget-container h-full">
           {isLoading && (

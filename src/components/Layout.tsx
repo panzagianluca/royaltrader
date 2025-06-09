@@ -17,7 +17,7 @@ import { Account } from "@/data/accounts";
 function LeftSidebarToggleButton() {
   const { toggleSidebar, state } = useSidebar();
   return (
-    <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
+    <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2 hover:bg-transparent">
       <PanelLeft className={`transition-transform duration-300 ${state === 'expanded' ? 'rotate-180' : ''}`} /> 
       <span className="sr-only">Toggle Left Sidebar</span>
     </Button>
@@ -52,7 +52,7 @@ export default function Layout() {
     >
       <SidebarProvider defaultOpen={true}>
         {/* Main App Container */}
-        <div className="flex h-screen bg-background w-full">
+        <div className="flex h-screen bg-sidebar w-full">
           {/* Column A: Left Sidebar */}
           <LeftSidebar 
             selectedAccount={selectedAccount} 
@@ -77,7 +77,7 @@ export default function Layout() {
             {/* Row B.2: Middle Section (Chart + Right Sidebar) */}
             <div className="flex-1 flex flex-row p-1 gap-1 min-h-0">
               {/* Sub-Column 1: TradingView Chart */}
-              <div className="flex-1 bg-background-primary rounded-2xl p-0.5">
+              <div className="flex-1 bg-background-primary rounded-md p-0.5">
                 <Chart darkMode={darkMode} />
               </div>
 
@@ -93,7 +93,7 @@ export default function Layout() {
             </div>
 
             {/* Row B.3: Bottom Terminal */}
-            <div style={{height: '250px'}} className="p-1">
+            <div className={`p-1 transition-all duration-500 ease-in-out ${bottomBannerExpanded ? 'h-[250px]' : 'h-[56px]'}`}>
               <BottomBanner 
                 isExpanded={bottomBannerExpanded}
                 onToggleExpand={() => setBottomBannerExpanded(!bottomBannerExpanded)}

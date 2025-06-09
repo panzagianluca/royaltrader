@@ -24,12 +24,10 @@ export default function OrderEntry() {
   const [takeProfitPnL, setTakeProfitPnL] = useState('')
   const [takeProfitPnLPercentage, setTakeProfitPnLPercentage] = useState('')
 
-  // Calculate margin and risk percentage based on lot size
   const marginInfo = useMemo(() => {
-    const riskPercentage = (lots / 1) * 100 // 1 lot = 100%
-    const marginValue = lots * 1000 // Each 0.1 lot = $100
+    const riskPercentage = (lots / 1) * 100
+    const marginValue = lots * 1000
 
-    // Determine color based on risk level
     let color = 'bg-green-500'
     if (riskPercentage >= 100) {
       color = 'bg-red-500'
@@ -60,15 +58,14 @@ export default function OrderEntry() {
     }).format(value)
   }
 
-  // Calculate PnL and other metrics
   const calculateMetrics = useCallback((price: string) => {
     if (!price || !currentPrice) return { distance: 0, pnl: 0, pnlPercentage: 0 }
     
     const priceNum = parseFloat(price)
     const currentPriceNum = parseFloat(currentPrice)
     const distance = Math.abs(priceNum - currentPriceNum)
-    const pnl = distance * lots * 1000 // Simplified PnL calculation
-    const pnlPercentage = (pnl / balance) * 100 // PnL as percentage of balance
+    const pnl = distance * lots * 1000
+    const pnlPercentage = (pnl / balance) * 100
     
     return {
       distance: distance.toFixed(4),
@@ -78,7 +75,7 @@ export default function OrderEntry() {
   }, [currentPrice, lots, balance])
 
   return (
-    <div className="p-4 space-y-4 bg-background-primary">
+    <div className="p-4 space-y-4 bg-background rounded-md h-full text-sm">
       {/* Order Type Selector */}
       <div className="w-full">
         <SegmentedControl.Root 
@@ -118,7 +115,7 @@ export default function OrderEntry() {
       {/* Limit Price Input */}
       {orderType === 'limit' && (
         <div className="relative">
-          <Label.Root htmlFor="limit-price" className="absolute -top-2 left-4 px-1 text-xs text-gray-500 dark:text-gray-400 bg-background-primary">
+          <Label.Root htmlFor="limit-price" className="absolute -top-2 left-4 px-1 text-xs text-muted-foreground bg-background">
             PRICE
           </Label.Root>
           <div className="flex items-center border-2 rounded-lg border-gray-300 dark:border-gray-600">
@@ -127,7 +124,7 @@ export default function OrderEntry() {
                 const currentValue = parseFloat(limitPrice) || 0
                 setLimitPrice((currentValue - 0.0001).toFixed(4))
               }}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg"
             >
               <Minus size={18} />
             </button>
@@ -136,7 +133,7 @@ export default function OrderEntry() {
               type="text"
               value={limitPrice}
               onChange={(e) => setLimitPrice(e.target.value)}
-              className="flex-1 text-center bg-transparent border-none focus:outline-none text-gray-700 dark:text-gray-300"
+              className="flex-1 text-center bg-transparent border-none focus:outline-none"
               placeholder="0.0000"
             />
             <button
@@ -144,7 +141,7 @@ export default function OrderEntry() {
                 const currentValue = parseFloat(limitPrice) || 0
                 setLimitPrice((currentValue + 0.0001).toFixed(4))
               }}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg"
             >
               <Plus size={18} />
             </button>
@@ -154,13 +151,13 @@ export default function OrderEntry() {
 
       {/* Lot Size Control */}
       <div className="relative">
-        <Label.Root htmlFor="lot-size" className="absolute -top-2 left-4 px-1 text-xs text-gray-500 dark:text-gray-400 bg-background-primary">
+        <Label.Root htmlFor="lot-size" className="absolute -top-2 left-4 px-1 text-xs text-muted-foreground bg-background">
           LOTSIZE
         </Label.Root>
         <div className="flex items-center border-2 rounded-lg border-gray-300 dark:border-gray-600">
           <button
             onClick={() => handleLotSizeChange('decrease')}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg"
           >
             <Minus size={18} />
           </button>
@@ -174,11 +171,11 @@ export default function OrderEntry() {
                 setLots(Number(value.toFixed(2)))
               }
             }}
-            className="flex-1 text-center bg-transparent border-none focus:outline-none text-gray-700 dark:text-gray-300"
+            className="flex-1 text-center bg-transparent border-none focus:outline-none"
           />
           <button
             onClick={() => handleLotSizeChange('increase')}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg"
           >
             <Plus size={18} />
           </button>
@@ -199,7 +196,7 @@ export default function OrderEntry() {
                 <Check className="h-3 w-3 text-white" />
               </Checkbox.Indicator>
             </Checkbox.Root>
-            <Label.Root className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label.Root className="text-sm font-medium">
               Stop Loss
             </Label.Root>
           </div>
@@ -212,7 +209,7 @@ export default function OrderEntry() {
                   setStopLoss((currentValue - 0.0001).toFixed(4))
                 }}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg shrink-0",
+                  "flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg shrink-0",
                   !isStopLossEnabled && "cursor-not-allowed"
                 )}
               >
@@ -222,7 +219,7 @@ export default function OrderEntry() {
                 type="text"
                 value={stopLoss}
                 onChange={(e) => isStopLossEnabled && setStopLoss(e.target.value)}
-                className="flex-1 text-center bg-transparent border-none focus:outline-none text-gray-700 dark:text-gray-300 h-full px-2 min-w-0 w-full"
+                className="flex-1 text-center bg-transparent border-none focus:outline-none h-full px-2 min-w-0 w-full"
                 placeholder="0.0000"
                 disabled={!isStopLossEnabled}
               />
@@ -233,39 +230,39 @@ export default function OrderEntry() {
                   setStopLoss((currentValue + 0.0001).toFixed(4))
                 }}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg shrink-0",
+                  "flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg shrink-0",
                   !isStopLossEnabled && "cursor-not-allowed"
                 )}
               >
                 <Plus size={14} />
               </button>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center">
+            <div className="text-xs text-muted-foreground h-8 flex items-center">
               <input
                 type="text"
                 value={stopLossDistance}
                 onChange={(e) => isStopLossEnabled && setStopLossDistance(e.target.value)}
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500"
                 placeholder="0"
                 disabled={!isStopLossEnabled}
               />
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center">
+            <div className="text-xs text-muted-foreground h-8 flex items-center">
               <input
                 type="text"
                 value={stopLossPnL}
                 onChange={(e) => isStopLossEnabled && setStopLossPnL(e.target.value)}
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500"
                 placeholder={String(calculateMetrics(stopLoss).pnl)}
                 disabled={!isStopLossEnabled}
               />
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center">
+            <div className="text-xs text-muted-foreground h-8 flex items-center">
               <input
                 type="text"
                 value={stopLossPnLPercentage}
                 onChange={(e) => isStopLossEnabled && setStopLossPnLPercentage(e.target.value)}
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500"
                 placeholder={`${String(calculateMetrics(stopLoss).pnlPercentage)}%`}
                 disabled={!isStopLossEnabled}
               />
@@ -274,18 +271,18 @@ export default function OrderEntry() {
         </div>
 
         {/* Column 2 - Center Column */}
-        <div className="space-y-2">
+        <div className="space-y-2 text-xs text-muted-foreground">
           <div className="h-8" /> {/* Empty first row */}
-          <div className="h-8 flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="h-8 flex items-center justify-center font-medium">
             Price
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center justify-center">
+          <div className="h-8 flex items-center justify-center">
             Distance
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center justify-center">
+          <div className="h-8 flex items-center justify-center">
             PnL
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center justify-center">
+          <div className="h-8 flex items-center justify-center">
             PnL%
           </div>
         </div>
@@ -302,7 +299,7 @@ export default function OrderEntry() {
                 <Check className="h-3 w-3 text-white" />
               </Checkbox.Indicator>
             </Checkbox.Root>
-            <Label.Root className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label.Root className="text-sm font-medium">
               Take Profit
             </Label.Root>
           </div>
@@ -315,7 +312,7 @@ export default function OrderEntry() {
                   setTakeProfit((currentValue - 0.0001).toFixed(4))
                 }}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg shrink-0",
+                  "flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg shrink-0",
                   !isTakeProfitEnabled && "cursor-not-allowed"
                 )}
               >
@@ -325,7 +322,7 @@ export default function OrderEntry() {
                 type="text"
                 value={takeProfit}
                 onChange={(e) => isTakeProfitEnabled && setTakeProfit(e.target.value)}
-                className="flex-1 text-center bg-transparent border-none focus:outline-none text-gray-700 dark:text-gray-300 h-full px-2 min-w-0 w-full"
+                className="flex-1 text-center bg-transparent border-none focus:outline-none h-full px-2 min-w-0 w-full"
                 placeholder="0.0000"
                 disabled={!isTakeProfitEnabled}
               />
@@ -336,41 +333,41 @@ export default function OrderEntry() {
                   setTakeProfit((currentValue + 0.0001).toFixed(4))
                 }}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg shrink-0",
+                  "flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg shrink-0",
                   !isTakeProfitEnabled && "cursor-not-allowed"
                 )}
               >
                 <Plus size={14} />
               </button>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center">
-              <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center">
+            <div className="text-xs text-muted-foreground h-8 flex items-center">
+              <div className="text-xs text-muted-foreground h-8 flex items-center">
                 <input
                   type="text"
                   value={takeProfitDistance}
                   onChange={(e) => isTakeProfitEnabled && setTakeProfitDistance(e.target.value)}
-                  className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+                  className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500"
                   placeholder="0"
                   disabled={!isTakeProfitEnabled}
                 />
               </div>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center">
+            <div className="text-xs text-muted-foreground h-8 flex items-center">
               <input
                 type="text"
                 value={takeProfitPnL}
                 onChange={(e) => isTakeProfitEnabled && setTakeProfitPnL(e.target.value)}
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500"
                 placeholder={String(calculateMetrics(takeProfit).pnl)}
                 disabled={!isTakeProfitEnabled}
               />
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400 h-8 flex items-center">
+            <div className="text-xs text-muted-foreground h-8 flex items-center">
               <input
                 type="text"
                 value={takeProfitPnLPercentage}
                 onChange={(e) => isTakeProfitEnabled && setTakeProfitPnLPercentage(e.target.value)}
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 text-sm"
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500"
                 placeholder={`${String(calculateMetrics(takeProfit).pnlPercentage)}%`}
                 disabled={!isTakeProfitEnabled}
               />
@@ -390,30 +387,26 @@ export default function OrderEntry() {
             style={{ width: `${Math.min(marginInfo.percentage, 100)}%` }}
           />
         </Progress.Root>
-        <div className="flex items-center justify-between text-sm">
-          <span className={cn(
-            "text-gray-600 dark:text-gray-300",
-            marginInfo.isHigh && "text-red-500 dark:text-red-400"
-          )}>
-            Margin: {formatCurrency(marginInfo.margin)}
-          </span>
-          <span className={cn(
-            "text-gray-600 dark:text-gray-300",
-            marginInfo.isHigh && "text-red-500 dark:text-red-400"
-          )}>
-            {marginInfo.percentage.toFixed(1)}%
-          </span>
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>Margin: ${marginInfo.margin.toFixed(2)}</span>
+          <span>{marginInfo.percentage.toFixed(0)}%</span>
         </div>
       </div>
 
       {/* Submit Button */}
-      <Button
-        variant="solid"
-        color={side === 'buy' ? 'green' : 'red'}
-        className="w-full"
-      >
-        {side.toUpperCase()}
-      </Button>
+      <div className="pt-2">
+        <Button
+          size="3"
+          className={cn(
+            "w-full transition-colors duration-200",
+            side === 'buy' 
+              ? "bg-green-500 hover:bg-green-600 text-white"
+              : "bg-red-500 hover:bg-red-600 text-white"
+          )}
+        >
+          {side.toUpperCase()}
+        </Button>
+      </div>
     </div>
   )
 }
