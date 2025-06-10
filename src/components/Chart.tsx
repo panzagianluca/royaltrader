@@ -85,6 +85,8 @@ export default function Chart({ darkMode }: ChartProps) {
             </div>
           )}
           <div id="tradingview_chart" className="absolute -inset-px"></div>
+          {/* Overlay to hide widget border */}
+          <div className="pointer-events-none absolute inset-0 z-20 rounded-md border-0 border-b-2 border-b-background" />
         </div>
       </div>
     </div>
