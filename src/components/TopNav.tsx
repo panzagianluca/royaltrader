@@ -1,4 +1,4 @@
-import { Sun, Moon, Bell, Maximize, Wifi, WifiOff } from 'lucide-react'
+import { Sun, Moon, Bell, Maximize, Wifi, WifiOff, ZoomIn, ZoomOut, Signal } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
 import { Button } from "@/components/ui/button"
 import {
@@ -13,8 +13,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
 import { useState, useEffect } from 'react'
 import { Account } from '@/data/accounts'
+import { useZoom } from '@/contexts/ZoomContext'
 
 const MOCK_NOTIFICATIONS = [
   {
@@ -94,6 +96,16 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
   const [showBadge, setShowBadge] = useState(true)
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('Good');
+  const [latency, setLatency] = useState(0);
+  const { zoomIn, zoomOut } = useZoom();
+
+  useEffect(() => {
+    const latencyInterval = setInterval(() => {
+      setLatency(Math.floor(Math.random() * (120 - 20 + 1)) + 20);
+    }, 2000);
+
+    return () => clearInterval(latencyInterval);
+  }, []);
 
   const formatBalance = (balance: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -175,13 +187,13 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   const getConnectionStatusIcon = () => {
     switch (connectionStatus) {
       case 'Good':
-        return <Wifi size={18} className="text-green-500" />;
+        return <Wifi size={16} className="text-green-500" />;
       case 'Regular':
-        return <Wifi size={18} className="text-yellow-500" />;
+        return <Wifi size={16} className="text-yellow-500" />;
       case 'Bad':
-        return <Wifi size={18} className="text-orange-500" />;
+        return <Wifi size={16} className="text-orange-500" />;
       case 'Disconnected':
-        return <WifiOff size={18} className="text-red-500" />;
+        return <WifiOff size={16} className="text-red-500" />;
     }
   };
 
@@ -295,55 +307,51 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
       </div>
 
       <div className="flex items-center space-x-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{darkMode ? 'Switch to light mode' : 'Switch to dark mode'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell size={18} />
-              {showBadge && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500"></span>}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="max-w-2xl">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative">
+                    {showBadge && <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />}
+                    <Bell size={16} />
+                  </Button>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Notifications</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Notifications</AlertDialogTitle>
               <AlertDialogDescription>
                 Here are your latest account activities and alerts.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <ScrollArea className="h-96">
-              <div className="pr-6">
-                {notifications.length > 0 ? (
-                  notifications.map(n => (
-                    <div key={n.id} className="py-3 border-b last:border-b-0">
-                      <p className="font-medium">{n.type.replace(/_/g, ' ')}</p>
-                      <p className="text-sm text-gray-500">{n.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{n.date}</p>
+            <ScrollArea className="h-72 w-full">
+              <div className="p-4 space-y-4">
+                {notifications.map((n) => (
+                  <div key={n.id} className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <Bell size={16} />
                     </div>
-                  ))
-                ) : (
-                  <p className="text-center py-8 text-gray-500">No new notifications.</p>
-                )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{n.message}</p>
+                      <p className="text-xs text-muted-foreground">{n.date}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </ScrollArea>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setShowBadge(false)}>Close</AlertDialogCancel>
-              <AlertDialogAction onClick={clearNotifications}>Clear All</AlertDialogAction>
+              <AlertDialogCancel>Close</AlertDialogCancel>
+              <AlertDialogAction onClick={clearNotifications}>Clear Notifications</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
+        <Separator orientation="vertical" className="h-6" />
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -352,24 +360,73 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Connection Status: {connectionStatus}</p>
+              <p>Connection: {connectionStatus}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Signal size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Latency: {latency}ms</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Separator orientation="vertical" className="h-6" />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{darkMode ? 'Light mode' : 'Dark mode'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Separator orientation="vertical" className="h-6" />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={zoomIn}>
+                <ZoomIn size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Zoom In</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={zoomOut}>
+                <ZoomOut size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Zoom Out</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Separator orientation="vertical" className="h-6" />
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
-                <Maximize size={18} />
+                <Maximize size={16} />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Toggle Fullscreen</p>
+              <p>Full Screen</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
       </div>
     </div>
   )

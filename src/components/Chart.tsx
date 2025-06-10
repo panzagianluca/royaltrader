@@ -49,14 +49,14 @@ export default function Chart({ darkMode }: ChartProps) {
           save_image: true,
           height: '100%',
           width: '100%',
-          "gridColor": "rgba(242, 242, 242, 0)",
+          gridColor: "rgba(242, 242, 242, 0)",
           hide_side_toolbar: false,
           withdateranges: true,
           hide_legend: false,
           show_popup_button: true,
           popup_width: '1000',
           popup_height: '650',
-          "hide_volume": true,
+          hide_volume: true,
         })
         setIsLoading(false)
       } catch (error) {
@@ -76,15 +76,15 @@ export default function Chart({ darkMode }: ChartProps) {
   }, [darkMode])
 
   return (
-    <div className="w-full h-full rounded-md overflow-hidden border border-border">
-      <div className="h-full ">
+    <div className="w-full h-full rounded-md overflow-hidden">
+      <div className="h-full relative">
         <div className="tradingview-widget-container h-full">
           {isLoading && (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           )}
-          <div id="tradingview_chart" className="h-full"></div>
+          <div id="tradingview_chart" className="absolute -inset-px"></div>
         </div>
       </div>
     </div>

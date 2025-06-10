@@ -8,6 +8,13 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { X, Scissors, Pencil } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const mockPositions = [
   {
@@ -48,7 +55,7 @@ export default function PositionsTable() {
           <TableRow>
             <TableHead>Order ID</TableHead>
             <TableHead>Symbol</TableHead>
-            <TableHead>Type</TableHead>
+            <TableHead>Side</TableHead>
             <TableHead>Volume</TableHead>
             <TableHead>Open Time</TableHead>
             <TableHead>Open Price</TableHead>
@@ -57,8 +64,8 @@ export default function PositionsTable() {
             <TableHead>Current Price</TableHead>
             <TableHead>Commission</TableHead>
             <TableHead>Swap</TableHead>
-            <TableHead>PnL</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-center">PnL</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,13 +86,47 @@ export default function PositionsTable() {
               <TableCell className="py-1">{position.currentPrice.toFixed(5)}</TableCell>
               <TableCell className="py-1">{position.commission.toFixed(2)}</TableCell>
               <TableCell className="py-1">{position.swap.toFixed(2)}</TableCell>
-              <TableCell className={`py-1 ${position.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <TableCell className={`text-center py-1 ${position.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {position.pnl.toFixed(2)}
               </TableCell>
               <TableCell className="py-1">
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">Close</Button>
-                  <Button variant="outline" size="sm">Partial Close</Button>
+                <div className="flex justify-end space-x-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" className="p-2">
+                          <Pencil size={14} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Modify</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" className="p-2">
+                          <X size={14} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Close</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" className="p-2">
+                          <Scissors size={14} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Partial Close</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </TableCell>
             </TableRow>

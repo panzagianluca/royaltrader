@@ -2,6 +2,7 @@ import { ChevronUp, ChevronDown } from 'lucide-react'
 import { useState } from 'react';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import PositionsTable from './PositionsTable';
+import OrdersTable from './OrdersTable';
 
 interface BottomBannerProps {
   isExpanded: boolean
@@ -44,7 +45,7 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
           {isExpanded && (
             <div className="p-4 h-full">
               {activeTab === 'Positions' && <PositionsTable />}
-              {activeTab === 'Orders' && <div>Orders Content</div>}
+              {activeTab === 'Orders' && <OrdersTable />}
               {activeTab === 'History' && <div>History Content</div>}
               {activeTab === 'Alerts' && <div>Alerts Content</div>}
             </div>
