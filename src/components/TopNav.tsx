@@ -1,4 +1,4 @@
-import { Sun, Moon, Bell, Maximize, Wifi, WifiOff, ZoomIn, ZoomOut, Signal } from 'lucide-react'
+import { Sun, Moon, Bell, Maximize, ZoomIn, ZoomOut } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip'
 import { Button } from "@/components/ui/button"
 import {
@@ -87,25 +87,13 @@ interface TopNavProps {
   selectedAccount?: Account | null
 }
 
-type ConnectionStatus = 'Good' | 'Regular' | 'Bad' | 'Disconnected';
-
 export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNavProps) {
   const [isLocked, setIsLocked] = useState(false)
   const [timeoutString, setTimeoutString] = useState("")
   const [lockCountdown, setLockCountdown] = useState("")
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
   const [showBadge, setShowBadge] = useState(true)
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('Good');
-  const [latency, setLatency] = useState(0);
   const { zoomIn, zoomOut } = useZoom();
-
-  useEffect(() => {
-    const latencyInterval = setInterval(() => {
-      setLatency(Math.floor(Math.random() * (120 - 20 + 1)) + 20);
-    }, 2000);
-
-    return () => clearInterval(latencyInterval);
-  }, []);
 
   const formatBalance = (balance: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -161,19 +149,6 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
     return () => clearInterval(interval)
   }, [isLocked])
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setConnectionStatus(prevStatus => {
-        if (prevStatus === 'Good') return 'Regular';
-        if (prevStatus === 'Regular') return 'Bad';
-        if (prevStatus === 'Bad') return 'Disconnected';
-        return 'Good';
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const toggleFullScreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -181,19 +156,6 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
-    }
-  };
-
-  const getConnectionStatusIcon = () => {
-    switch (connectionStatus) {
-      case 'Good':
-        return <Wifi size={16} className="text-green-500" />;
-      case 'Regular':
-        return <Wifi size={16} className="text-yellow-500" />;
-      case 'Bad':
-        return <Wifi size={16} className="text-orange-500" />;
-      case 'Disconnected':
-        return <WifiOff size={16} className="text-red-500" />;
     }
   };
 
@@ -355,41 +317,15 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon">
-                {getConnectionStatusIcon()}
+              <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
+                <Maximize size={16} />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Connection: {connectionStatus}</p>
+              <p>Fullscreen</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Signal size={16} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Latency: {latency}ms</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <Separator orientation="vertical" className="h-6" />
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{darkMode ? 'Light mode' : 'Dark mode'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <Separator orientation="vertical" className="h-6" />
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -418,12 +354,12 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
-                <Maximize size={16} />
+              <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Full Screen</p>
+              <p>{darkMode ? 'Light mode' : 'Dark mode'}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

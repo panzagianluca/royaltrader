@@ -133,8 +133,6 @@ const SidebarProvider = React.forwardRef<
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
 
-    console.log("[Debug] SidebarProvider rendering. Context Value:", contextValue); // DEBUG LOG
-
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>

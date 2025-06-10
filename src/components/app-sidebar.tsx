@@ -8,6 +8,9 @@ import {
   ShieldCheck,
   Newspaper,
   History,
+  Wifi, 
+  WifiOff, 
+  Signal
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -20,9 +23,12 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import AccountManageModal from "./AccountManageModal"
 import { accountsData, Account } from "@/data/accounts";
+import { Button } from "./ui/button"
+import { Separator } from "./ui/separator"
 
 // This is sample data.
 const data = {
@@ -99,6 +105,65 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   currentPage: string;
 }
 
+type ConnectionStatus = 'Good' | 'Regular' | 'Bad' | 'Disconnected';
+
+function ConnectionStatusIndicator() {
+  const { open } = useSidebar();
+  const [connectionStatus, setConnectionStatus] = React.useState<ConnectionStatus>('Good');
+  const [latency, setLatency] = React.useState(0);
+
+  React.useEffect(() => {
+    const latencyInterval = setInterval(() => {
+      setLatency(Math.floor(Math.random() * (120 - 20 + 1)) + 20);
+    }, 2000);
+
+    const statusInterval = setInterval(() => {
+      setConnectionStatus(prevStatus => {
+        if (prevStatus === 'Good') return 'Regular';
+        if (prevStatus === 'Regular') return 'Bad';
+        if (prevStatus === 'Bad') return 'Disconnected';
+        return 'Good';
+      });
+    }, 5000);
+
+    return () => {
+      clearInterval(latencyInterval);
+      clearInterval(statusInterval);
+    };
+  }, []);
+
+  const getConnectionStatusIcon = () => {
+    switch (connectionStatus) {
+      case 'Good':
+        return <Wifi size={16} className="text-green-500" />;
+      case 'Regular':
+        return <Wifi size={16} className="text-yellow-500" />;
+      case 'Bad':
+        return <Wifi size={16} className="text-orange-500" />;
+      case 'Disconnected':
+        return <WifiOff size={16} className="text-red-500" />;
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="cursor-default">
+          {getConnectionStatusIcon()}
+        </Button>
+        {open && <span className="text-xs text-muted-foreground">Connection: {connectionStatus}</span>}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" className="cursor-default">
+          <Signal size={16} className="text-blue-500" />
+        </Button>
+        {open && <span className="text-xs text-muted-foreground">Latency: {latency}ms</span>}
+      </div>
+      <Separator />
+    </div>
+  )
+}
+
 export function AppSidebar({ selectedAccount, onAccountSelect, navigateTo, currentPage, ...props }: AppSidebarProps) {
   const [isManageModalOpen, setIsManageModalOpen] = React.useState(false)
   const [accounts, setAccounts] = React.useState(accountsData);
@@ -134,6 +199,7 @@ export function AppSidebar({ selectedAccount, onAccountSelect, navigateTo, curre
           <NavProjects title="Navigation" projects={projectsWithActiveState} navigateTo={navigateTo} />
         </SidebarContent>
         <SidebarFooter>
+          <ConnectionStatusIndicator />
           <NavUser user={data.user} />
         </SidebarFooter>
         <SidebarRail />
