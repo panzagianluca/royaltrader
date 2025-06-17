@@ -8,31 +8,28 @@ import OrderEntry from './OrderEntry'
 import BottomBanner from './BottomBanner'
 import NewsCalendar from './NewsCalendar'
 import { themeConfig } from '../styles/theme'
-import { SidebarProvider, useSidebar } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { PanelLeft } from "lucide-react"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import '@radix-ui/themes/styles.css'
 import '../styles/theme.css'
 import { Account } from "@/data/accounts";
-
-function LeftSidebarToggleButton() {
-  const { toggleSidebar, state } = useSidebar();
-  return (
-    <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2 hover:bg-transparent">
-      <PanelLeft className={`transition-transform duration-300 ${state === 'expanded' ? 'rotate-180' : ''}`} /> 
-      <span className="sr-only">Toggle Left Sidebar</span>
-    </Button>
-  );
-}
+import { usePersistedState } from "@/hooks/usePersistedState"
+import { AppToaster } from "@/components/ui/notifications";
 
 export default function Layout() {
   const [currentPage, setCurrentPage] = useState('chart');
-  const [bottomBannerExpanded, setBottomBannerExpanded] = useState(true)
+  const [darkMode, setDarkMode] = usePersistedState<boolean>(
+    'ui.darkMode',
+    true
+  )
+  const [bottomBannerExpanded, setBottomBannerExpanded] = usePersistedState<boolean>(
+    'ui.bottomBannerExpanded',
+    true
+  )
+  const [sidebarOpen, setSidebarOpen] = usePersistedState<boolean>(
+    'ui.sidebarExpanded',
+    true
+  )
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode')
-    return saved ? JSON.parse(saved) : true
-  })
 
   useEffect(() => {
     if (darkMode) {
@@ -89,7 +86,8 @@ export default function Layout() {
       radius="medium"
       scaling="100%"
     >
-      <SidebarProvider defaultOpen={true}>
+      <AppToaster richColors position="top-right" />
+      <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <div className="flex h-screen bg-sidebar w-full">
           <LeftSidebar 
             selectedAccount={selectedAccount} 
@@ -100,7 +98,6 @@ export default function Layout() {
           
           <div className="flex-1 flex flex-col">
             <div style={{height: '50px'}} className="flex items-center px-1 pt-1">
-              <LeftSidebarToggleButton />
               <div className="flex-1">
                 <TopNav 
                   darkMode={darkMode} 

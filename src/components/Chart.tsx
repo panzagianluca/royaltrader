@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useTradingStore } from '@/store/trading'
 
 interface ChartProps {
   darkMode: boolean
@@ -6,6 +7,14 @@ interface ChartProps {
 
 export default function Chart({ darkMode }: ChartProps) {
   const [isLoading, setIsLoading] = useState(true)
+  const chartSymbol = useTradingStore((s) => s.chartSymbol)
+  const positions = useTradingStore((s) => s.positions)
+  const orders = useTradingStore((s) => s.orders)
+  const widgetRef = useRef<any>(null)
+  const orderMarkerMapRef = useRef<Map<string, any>>(new Map())
+
+  // keep store prices in sync with what the chart shows (last close)
+  const updatePrice = useTradingStore((s) => s.updatePrice)
 
   useEffect(() => {
     const loadTradingView = () => {
@@ -36,9 +45,9 @@ export default function Chart({ darkMode }: ChartProps) {
           return
         }
 
-        new (window as any).TradingView.widget({
+        widgetRef.current = new (window as any).TradingView.widget({
           container_id: 'tradingview_chart',
-          symbol: 'FX:EURUSD',
+          symbol: chartSymbol,
           interval: '15',
           theme: darkMode ? 'dark' : 'light',
           style: '1',
@@ -73,7 +82,146 @@ export default function Chart({ darkMode }: ChartProps) {
         document.head.removeChild(script)
       }
     }
-  }, [darkMode])
+  }, [darkMode, chartSymbol])
+
+  // effect to draw position entry lines for current symbol
+  useEffect(() => {
+    if (!widgetRef.current) return
+    const tvWidget = widgetRef.current
+
+    const drawLines = () => {
+      const chart = tvWidget.activeChart?.()
+      if (!chart) return
+
+      // clear previous shapes before drawing new ones
+      chart.removeAllShapes()
+
+      const symbolKey = chartSymbol.split(':')[1] ?? chartSymbol
+
+      positions
+        .filter((p) => p.symbol === symbolKey)
+        .forEach((p) => {
+          const line = chart.createShape(
+            { price: p.openPrice },
+            {
+              shape: 'horizontal_line',
+              disableSelection: true,
+              disableSave: true,
+              overrides: {
+                linewidth: 1,
+                linestyle: 2,
+                linecolor: p.type === 'Buy' ? '#22c55e' : '#ef4444',
+              },
+            }
+          )
+          line.setText(
+            `${p.type?.toUpperCase()} ${p.volume} | $${p.pnl.toFixed(2)}`
+          )
+        })
+    }
+
+    if (typeof tvWidget.onChartReady === 'function') {
+      // `onChartReady` executes immediately if the chart is already ready,
+      // otherwise it waits until readiness — covers both scenarios without
+      // relying on non-existent `chart()` helper.
+      tvWidget.onChartReady(drawLines)
+    } else {
+      // Fallback: try to draw right away if `activeChart` is already present.
+      try {
+        drawLines()
+      } catch (err) {
+        // noop – chart not ready yet
+      }
+    }
+  }, [positions, chartSymbol])
+
+  // effect to draw / update pending order markers
+  useEffect(() => {
+    if (!widgetRef.current) return
+
+    const tvWidget = widgetRef.current
+
+    const processMarkers = () => {
+      const chart = tvWidget.activeChart?.()
+      if (!chart) return
+
+      const symbolKey = chartSymbol.split(':')[1] ?? chartSymbol
+
+      const pendingOrders = orders.filter(
+        (o) => o.status === 'pending' && o.symbol === symbolKey
+      )
+
+      const existingMap = orderMarkerMapRef.current
+
+      // Remove stale markers
+      existingMap.forEach((shape, orderId) => {
+        const stillExists = pendingOrders.find((o) => o.id === orderId)
+        if (!stillExists) {
+          try {
+            chart.removeEntity(shape)
+          } catch {}
+          existingMap.delete(orderId)
+        }
+      })
+
+      // Add new markers
+      pendingOrders.forEach((ord) => {
+        if (existingMap.has(ord.id)) return
+
+        const isBuy = ord.type.startsWith('Buy')
+        const shape = chart.createShape(
+          { price: ord.price },
+          {
+            shape: 'icon',
+            icon: 0xf111, // simple dot icon (fa circle) – TradingView supports FontAwesome icons
+            overrides: {
+              color: isBuy ? '#22c55e' : '#ef4444',
+              size: 8,
+            },
+            disableSelection: true,
+            disableSave: true,
+          }
+        )
+
+        shape.setText(`${ord.type}`)
+
+        existingMap.set(ord.id, shape)
+      })
+    }
+
+    if (typeof tvWidget.onChartReady === 'function') {
+      tvWidget.onChartReady(processMarkers)
+    } else {
+      processMarkers()
+    }
+  }, [orders, chartSymbol])
+
+  // keep store prices in sync with what the chart shows (last close)
+  useEffect(() => {
+    if (!widgetRef.current) return
+
+    const interval = setInterval(() => {
+      try {
+        const chart = widgetRef.current.activeChart?.()
+        if (!chart) return
+        const series = chart.getSeries?.()
+        if (!series || typeof series.data !== 'function') return
+
+        const dataArr = series.data()
+        if (!dataArr || !dataArr.length) return
+
+        const lastBar: any = dataArr[dataArr.length - 1]
+        const lastPrice =
+          lastBar.close ?? lastBar.price ?? lastBar.value ?? lastBar.c ?? lastBar.o
+        if (typeof lastPrice !== 'number' || isNaN(lastPrice)) return
+
+        const symbolKey = chartSymbol.split(':')[1] ?? chartSymbol
+        updatePrice(symbolKey, Number(lastPrice))
+      } catch {}
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [chartSymbol])
 
   return (
     <div className="w-full h-full rounded-md overflow-hidden">

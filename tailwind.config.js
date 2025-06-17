@@ -146,11 +146,20 @@ export default {
   			"accordion-up": {
   				from: { height: "var(--radix-accordion-content-height)" },
   				to: { height: "0" },
-  			}
+  			},
+  			glow: {
+  				"0%, 100%": {
+  					boxShadow: "0 0 0 0 hsl(var(--sidebar-border) / 0.8)",
+  				},
+  				"50%": {
+  					boxShadow: "0 0 8px 4px hsl(var(--sidebar-border) / 0.8)",
+  				},
+  			},
   		},
   		animation: {
   			"accordion-down": "accordion-down 0.2s ease-out",
-  			"accordion-up": "accordion-up 0.2s ease-out"
+  			"accordion-up": "accordion-up 0.2s ease-out",
+  			glow: "glow 1.5s ease-in-out infinite"
   		}
   	}
   },

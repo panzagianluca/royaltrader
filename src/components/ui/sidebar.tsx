@@ -44,8 +44,30 @@ export const SidebarContext = React.createContext<SidebarContextProps | null>(nu
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
+  // Gracefully handle calls made outside of an active SidebarProvider.
+  // Rather than throwing and crashing the app, we log a warning (development only)
+  // and provide a set of sensible no-op defaults so that dependent components can
+  // still render. This is particularly useful for isolated environments like
+  // Storybook, tests, or when components are accidentally mounted without the
+  // provider.
   if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
+    const isDev = ((globalThis as any).process?.env?.NODE_ENV ?? "development") !== "production"
+    if (isDev) {
+      // eslint-disable-next-line no-console
+      console.warn("[Sidebar] useSidebar called outside of a <SidebarProvider>. Rendering with fallback context – interactivity will be disabled.")
+    }
+
+    const noop = () => {}
+
+    return {
+      state: "expanded",
+      open: true,
+      setOpen: noop,
+      openMobile: false,
+      setOpenMobile: noop,
+      isMobile: false,
+      toggleSidebar: noop,
+    }
   }
 
   return context
@@ -279,7 +301,10 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7", className)}
+      className={cn(
+        "h-7 w-7 cursor-pointer hover:animate-glow hover:ring-2 hover:ring-sidebar-ring",
+        className
+      )}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
@@ -308,7 +333,7 @@ const SidebarRail = React.forwardRef<
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
+        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex hover:after:animate-glow hover:cursor-pointer",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",

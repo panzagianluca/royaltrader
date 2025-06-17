@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Input } from './ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { ScrollArea } from './ui/scroll-area'
+import { useTradingStore } from '@/store/trading'
 
 interface Instrument {
   symbol: string
@@ -36,7 +37,27 @@ const sampleInstruments: Instrument[] = [
 export default function Watchlist() {
   const [searchQuery, setSearchQuery] = useState('')
   const [watchlistFilter, setWatchlistFilter] = useState('all')
+
+  const prices = useTradingStore((s) => s.prices)
+  const dayOpens = useTradingStore((s) => s.dayOpens)
+
   const [instruments, setInstruments] = useState(sampleInstruments)
+
+  // Augment instruments with live price & change
+  const liveInstruments = instruments.map((inst) => {
+    const livePrice = prices[inst.symbol] ?? inst.price
+    const open = dayOpens[inst.symbol] ?? inst.price
+    const changePct = ((livePrice - open) / open) * 100
+    return { ...inst, price: livePrice, change: changePct }
+  })
+
+  const filteredInstruments = liveInstruments.filter(instrument => {
+    const matchesSearch = instrument.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesFilter = watchlistFilter === 'all' || 
+                         (watchlistFilter === 'favorites' && instrument.isFavorite) ||
+                         instrument.category === watchlistFilter
+    return matchesSearch && matchesFilter
+  })
 
   const toggleFavorite = (symbol: string) => {
     setInstruments(instruments.map(instrument => 
@@ -45,14 +66,6 @@ export default function Watchlist() {
         : instrument
     ))
   }
-
-  const filteredInstruments = instruments.filter(instrument => {
-    const matchesSearch = instrument.symbol.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesFilter = watchlistFilter === 'all' || 
-                         (watchlistFilter === 'favorites' && instrument.isFavorite) ||
-                         instrument.category === watchlistFilter
-    return matchesSearch && matchesFilter
-  })
 
   return (
     <div className="flex flex-col h-full bg-background rounded-md text-sm">
@@ -96,10 +109,17 @@ export default function Watchlist() {
               </thead>
               <tbody>
                 {filteredInstruments.map((instrument) => (
-                  <tr key={instrument.symbol} className="text-sm hover:bg-background-alpha">
+                  <tr
+                    key={instrument.symbol}
+                    className="text-sm hover:bg-background-alpha cursor-pointer"
+                    onClick={() => useTradingStore.getState().setChartSymbol(`FX:${instrument.symbol}`)}
+                  >
                     <td className="p-2">
                       <button 
-                        onClick={() => toggleFavorite(instrument.symbol)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleFavorite(instrument.symbol)
+                        }}
                         className={`p-1 rounded transition-colors ${instrument.isFavorite ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
                       >
                         <Star size={16} className={instrument.isFavorite ? 'fill-current' : ''} />

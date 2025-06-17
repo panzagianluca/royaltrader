@@ -5,9 +5,12 @@ import * as Label from '@radix-ui/react-label'
 import * as Checkbox from '@radix-ui/react-checkbox'
 import { Button, SegmentedControl } from '@radix-ui/themes'
 import { cn } from '@/lib/utils'
+import { useTradingStore, CONTRACT_SIZE, LEVERAGE } from '@/store/trading'
+import { notifySuccess, notifyError } from '@/components/ui/notifications'
 
 export default function OrderEntry() {
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market')
+  const [pendingSubtype, setPendingSubtype] = useState<'Limit' | 'Stop'>('Limit')
   const [side, setSide] = useState<'buy' | 'sell'>('buy')
   const [lots, setLots] = useState(0.1)
   const [limitPrice, setLimitPrice] = useState('')
@@ -15,18 +18,25 @@ export default function OrderEntry() {
   const [takeProfit, setTakeProfit] = useState('')
   const [isStopLossEnabled, setIsStopLossEnabled] = useState(false)
   const [isTakeProfitEnabled, setIsTakeProfitEnabled] = useState(false)
-  const [currentPrice] = useState('1.0850')
-  const [balance] = useState(100000)
   const [stopLossDistance, setStopLossDistance] = useState('0')
   const [stopLossPnL, setStopLossPnL] = useState('')
   const [stopLossPnLPercentage, setStopLossPnLPercentage] = useState('')
   const [takeProfitDistance, setTakeProfitDistance] = useState('0')
   const [takeProfitPnL, setTakeProfitPnL] = useState('')
   const [takeProfitPnLPercentage, setTakeProfitPnLPercentage] = useState('')
+  const chartSymbol = useTradingStore((s) => s.chartSymbol)
+  const prices = useTradingStore((s) => s.prices)
+  const balance = useTradingStore((s) => s.balance)
+  const freeMargin = useTradingStore((s) => s.freeMargin)
+  const placeMarket = useTradingStore((s) => s.placeMarket)
+  const placeOrder = useTradingStore((s) => s.placeOrder)
+
+  const symbolKey = chartSymbol.split(':')[1] ?? chartSymbol
+  const currentPrice = prices[symbolKey]?.toString() ?? '0'
 
   const marginInfo = useMemo(() => {
     const riskPercentage = (lots / 1) * 100
-    const marginValue = lots * 1000
+    const marginValue = (lots * CONTRACT_SIZE) / LEVERAGE
 
     let color = 'bg-green-500'
     if (riskPercentage >= 100) {
@@ -42,6 +52,39 @@ export default function OrderEntry() {
       isHigh: riskPercentage >= 100
     }
   }, [lots])
+
+  const requiredMargin = (lots * CONTRACT_SIZE) / LEVERAGE
+
+  const handleExecute = () => {
+    const sideDir = side
+
+    if (orderType === 'market') {
+      const priceNum = prices[symbolKey]
+      if (!priceNum) return notifyError('Price unavailable')
+      if (freeMargin < requiredMargin) return notifyError('Not enough free margin')
+      placeMarket(sideDir === 'buy' ? 'Buy' : 'Sell', lots, symbolKey, priceNum)
+      return notifySuccess(`${sideDir.toUpperCase()} ${lots} ${symbolKey} executed`)
+    }
+
+    // Pending order flow
+    const priceNum = parseFloat(limitPrice)
+    if (!priceNum) return notifyError('Enter price')
+
+    const typeLabel = `${sideDir === 'buy' ? 'Buy' : 'Sell'} ${pendingSubtype}`
+
+    placeOrder({
+      symbol: symbolKey,
+      volume: lots,
+      type: typeLabel,
+      price: priceNum,
+      sl: isStopLossEnabled ? parseFloat(stopLoss) || undefined : undefined,
+      tp: isTakeProfitEnabled ? parseFloat(takeProfit) || undefined : undefined,
+    })
+
+    notifySuccess(`${typeLabel} order placed for ${lots} ${symbolKey}`)
+    // reset
+    setLimitPrice('')
+  }
 
   const handleLotSizeChange = useCallback((direction: 'increase' | 'decrease') => {
     setLots(prev => {
@@ -117,6 +160,21 @@ export default function OrderEntry() {
 
       {/* Limit Price Input */}
       {orderType === 'limit' && (
+        <div className="w-full">
+          <SegmentedControl.Root 
+            value={pendingSubtype.toLowerCase()}
+            onValueChange={(value: string) => setPendingSubtype(value === 'limit' ? 'Limit' : 'Stop')}
+            size="2"
+            className="w-full [&>button]:flex-1 text-xs mb-2"
+          >
+            <SegmentedControl.Item value="limit">LIMIT</SegmentedControl.Item>
+            <SegmentedControl.Item value="stop">STOP</SegmentedControl.Item>
+          </SegmentedControl.Root>
+        </div>
+      )}
+
+      {/* Limit Price Input */}
+      {orderType === 'limit' && (
         <div className="relative">
           <Label.Root htmlFor="limit-price" className="absolute -top-2 left-4 px-1 text-xs text-muted-foreground bg-background">
             PRICE
@@ -124,7 +182,7 @@ export default function OrderEntry() {
           <div className="flex items-center border-2 rounded-lg border-gray-300 dark:border-gray-600">
             <button
               onClick={() => {
-                const currentValue = parseFloat(limitPrice) || 0
+                const currentValue = parseFloat(limitPrice) || parseFloat(currentPrice)
                 setLimitPrice((currentValue - 0.0001).toFixed(4))
               }}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-lg"
@@ -141,7 +199,7 @@ export default function OrderEntry() {
             />
             <button
               onClick={() => {
-                const currentValue = parseFloat(limitPrice) || 0
+                const currentValue = parseFloat(limitPrice) || parseFloat(currentPrice)
                 setLimitPrice((currentValue + 0.0001).toFixed(4))
               }}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-lg"
@@ -208,7 +266,7 @@ export default function OrderEntry() {
               <button
                 onClick={() => {
                   if (!isStopLossEnabled) return;
-                  const currentValue = parseFloat(stopLoss) || 0
+                  const currentValue = parseFloat(stopLoss) || parseFloat(currentPrice)
                   setStopLoss((currentValue - 0.0001).toFixed(4))
                 }}
                 className={cn(
@@ -229,7 +287,7 @@ export default function OrderEntry() {
               <button
                 onClick={() => {
                   if (!isStopLossEnabled) return;
-                  const currentValue = parseFloat(stopLoss) || 0
+                  const currentValue = parseFloat(stopLoss) || parseFloat(currentPrice)
                   setStopLoss((currentValue + 0.0001).toFixed(4))
                 }}
                 className={cn(
@@ -311,7 +369,7 @@ export default function OrderEntry() {
               <button
                 onClick={() => {
                   if (!isTakeProfitEnabled) return;
-                  const currentValue = parseFloat(takeProfit) || 0
+                  const currentValue = parseFloat(takeProfit) || parseFloat(currentPrice)
                   setTakeProfit((currentValue - 0.0001).toFixed(4))
                 }}
                 className={cn(
@@ -332,7 +390,7 @@ export default function OrderEntry() {
               <button
                 onClick={() => {
                   if (!isTakeProfitEnabled) return;
-                  const currentValue = parseFloat(takeProfit) || 0
+                  const currentValue = parseFloat(takeProfit) || parseFloat(currentPrice)
                   setTakeProfit((currentValue + 0.0001).toFixed(4))
                 }}
                 className={cn(
@@ -396,18 +454,19 @@ export default function OrderEntry() {
         </div>
       </div>
 
-      {/* Submit Button */}
+      {/* Action Button */}
       <div className="pt-2">
         <Button
-          size="3"
+          disabled={freeMargin < requiredMargin}
+          onClick={handleExecute}
           className={cn(
-            "w-full transition-colors duration-200",
-            side === 'buy' 
-              ? "bg-green-500 hover:bg-green-600 text-white"
-              : "bg-red-500 hover:bg-red-600 text-white"
+            'w-full text-white',
+            side === 'buy'
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-red-600 hover:bg-red-700'
           )}
         >
-          {side.toUpperCase()}
+          {side.toUpperCase()} {lots} {symbolKey}
         </Button>
       </div>
     </div>
