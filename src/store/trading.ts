@@ -68,7 +68,7 @@ type TradingState = {
 
 export const useTradingStore = create<TradingState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       prices: {
         EURUSD: 1.085,
         GBPJPY: 191.5,

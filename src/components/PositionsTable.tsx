@@ -7,7 +7,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { X, Scissors, Pencil } from "lucide-react"
 import {
   Tooltip,
@@ -18,7 +17,7 @@ import {
 import { useRef } from "react"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { notifySuccess, notifyError } from "@/components/ui/notifications"
+import { notifySuccess } from "@/components/ui/notifications"
 import { useTradingStore } from "@/store/trading"
 
 // pull positions from global store
