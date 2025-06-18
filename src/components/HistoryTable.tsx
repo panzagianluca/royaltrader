@@ -13,6 +13,9 @@ import { useTradingStore } from "@/store/trading"
 
 const useHistory = () => useTradingStore((s) => s.history)
 
+const ROW_HEIGHT = 28
+const rowHeightClass = "h-7"
+
 export default function HistoryTable() {
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const history = useHistory()
@@ -22,7 +25,7 @@ export default function HistoryTable() {
     getScrollElement: () =>
       (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as Element | null),
     overscan: 8,
-    estimateSize: () => 40,
+    estimateSize: () => ROW_HEIGHT,
   })
 
   const virtualItems = rowVirtualizer.getVirtualItems()
@@ -67,18 +70,18 @@ export default function HistoryTable() {
         <ColumnGroup />
         <TableHeader>
           <TableRow>
-            <TableHead>Ticket</TableHead>
-            <TableHead>Symbol</TableHead>
-            <TableHead>Side</TableHead>
-            <TableHead>Lots</TableHead>
-            <TableHead>Open Time</TableHead>
-            <TableHead>Close Time</TableHead>
-            <TableHead>Open Price</TableHead>
-            <TableHead>Close Price</TableHead>
-            <TableHead className="text-center">P/L</TableHead>
-            <TableHead>Commission</TableHead>
-            <TableHead>Swap</TableHead>
-            <TableHead>Duration</TableHead>
+            <TableHead className="text-xs h-8">Ticket</TableHead>
+            <TableHead className="text-xs h-8">Symbol</TableHead>
+            <TableHead className="text-xs h-8">Side</TableHead>
+            <TableHead className="text-xs h-8">Lots</TableHead>
+            <TableHead className="text-xs h-8">Open Time</TableHead>
+            <TableHead className="text-xs h-8">Close Time</TableHead>
+            <TableHead className="text-xs h-8">Open Price</TableHead>
+            <TableHead className="text-xs h-8">Close Price</TableHead>
+            <TableHead className="text-xs h-8 text-center">P/L</TableHead>
+            <TableHead className="text-xs h-8">Commission</TableHead>
+            <TableHead className="text-xs h-8">Swap</TableHead>
+            <TableHead className="text-xs h-8">Duration</TableHead>
           </TableRow>
         </TableHeader>
       </Table>
@@ -94,7 +97,7 @@ export default function HistoryTable() {
             {virtualItems.map((virtualRow: VirtualItem) => {
               const entry = history[virtualRow.index]
               return (
-                <TableRow key={entry.id} style={{ transform: `translateY(${virtualRow.start}px)` }}>
+                <TableRow key={entry.id} className={rowHeightClass}>
                   <TableCell className="py-1">{entry.id}</TableCell>
                   <TableCell className="py-1">{entry.symbol}</TableCell>
                   <TableCell className="py-1">{entry.side}</TableCell>

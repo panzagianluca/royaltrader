@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { notifySuccess } from "@/components/ui/notifications";
 import { useTradingStore } from "@/store/trading";
+import AlertsTable from './AlertsTable';
 
 interface BottomBannerProps {
   isExpanded: boolean
@@ -33,6 +34,7 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
   const [activeTab, setActiveTab] = usePersistedState<Tab>('ui.bottomBannerTab', 'Positions');
   const positionsLive = usePositionsLive();
   const ordersLive = useOrdersLive();
+  const alertsCount = useTradingStore((s)=>s.alerts.length);
 
   const totalPnL = positionsLive.reduce((sum, p) => sum + p.pnl, 0);
   const profitableTrades = positionsLive.filter((p) => p.pnl > 0);
@@ -42,6 +44,19 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
   const ordersCountMock = ordersLive.length;
 
   const tabs: Tab[] = ['Positions', 'Orders', 'History', 'Alerts'];
+
+  const displayLabel = (tab: Tab) => {
+    switch (tab) {
+      case 'Positions':
+        return `Positions (${positionsCountMock})`
+      case 'Orders':
+        return `Orders (${ordersCountMock})`
+      case 'Alerts':
+        return `Alerts (${alertsCount})`
+      default:
+        return tab
+    }
+  }
 
   return (
     <div className={`transition-all duration-500 ease-in-out bg-background rounded-md ${isExpanded ? 'h-full' : 'h-[40px]'}`}>
@@ -55,9 +70,9 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
                     key={tab}
                     value={tab}
                     aria-label={`Select ${tab}`}
-                    className="text-sm font-normal px-3 py-1 rounded-md transition-colors hover:bg-muted hover:text-primary data-[state=on]:bg-muted data-[state=on]:text-primary data-[state=on]:font-medium"
+                    className="text-sm font-normal px-3 py-1 border-b-2 border-transparent rounded-none bg-transparent hover:bg-transparent hover:text-primary/80 transition-colors data-[state=on]:border-primary data-[state=on]:bg-transparent data-[state=on]:text-current data-[state=on]:font-medium"
                   >
-                    {tab}
+                    {displayLabel(tab)}
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
@@ -70,103 +85,119 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
           </div>
 
           <div className="flex items-center gap-2">
-            {!isExpanded && (
-              <div className="flex gap-1">
-                {/* Close All */}
+            <div className="flex gap-1">
+              {/* Close All */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="px-2 py-0.5 h-6 text-xs">Close All</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Close All Trades</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Close all positions/orders for a total PnL of ${totalPnL.toFixed(2)}.<br/>
+                      Total trades to be closed: {positionsLive.length}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => { useTradingStore.getState().closeAllPositions(); notifySuccess("All positions closed") }}>Confirm</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {/* Close Profits */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="px-2 py-0.5 h-6 text-xs">Close Profits</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Close Profitable Trades</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Close all profitable positions for a total PnL of ${profitableTrades.reduce((s,p)=>s+p.pnl,0).toFixed(2)}.<br/>
+                      Total trades to be closed: {profitableTrades.length}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => { useTradingStore.getState().closeProfitablePositions(); notifySuccess("Profitable positions closed") }}>Confirm</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {/* Close Losses */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="px-2 py-0.5 h-6 text-xs">Close Losses</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Close Losing Trades</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Close all losing positions for a total PnL of ${losingTrades.reduce((s,p)=>s+p.pnl,0).toFixed(2)}.<br/>
+                      Total trades to be closed: {losingTrades.length}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => { useTradingStore.getState().closeLosingPositions(); notifySuccess("Losing positions closed") }}>Confirm</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {/* Cancel Pending */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="secondary" className="px-2 py-0.5 h-6 text-xs">Cancel Orders</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancel All Pending Orders</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will cancel all pending orders ({ordersLive.filter(o=>o.status === 'pending').length}).
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Keep</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => { useTradingStore.getState().cancelAllPending(); notifySuccess('All pending orders cancelled') }}>Confirm</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {/* Clear Alerts */}
+              {activeTab === 'Alerts' && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" className="px-2 py-0.5 h-6 text-xs">Close All</Button>
+                    <Button size="sm" variant="secondary" className="px-2 py-0.5 h-6 text-xs">Clear Alerts</Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Close All Trades</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Close all positions/orders for a total PnL of ${totalPnL.toFixed(2)}.<br/>
-                        Total trades to be closed: {positionsLive.length}
-                      </AlertDialogDescription>
+                      <AlertDialogTitle>Clear All Alerts</AlertDialogTitle>
+                      <AlertDialogDescription>This will remove all alerts from the list.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => notifySuccess("All trades closed")}>Confirm</AlertDialogAction>
+                      <AlertDialogAction onClick={() => { useTradingStore.getState().clearAlerts(); }}>Confirm</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                {/* Close Profits */}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" className="px-2 py-0.5 h-6 text-xs">Close Profits</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Close Profitable Trades</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Close all profitable positions for a total PnL of ${profitableTrades.reduce((s,p)=>s+p.pnl,0).toFixed(2)}.<br/>
-                        Total trades to be closed: {profitableTrades.length}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => notifySuccess("Profitable trades closed")}>Confirm</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                {/* Cancel Pending */}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="secondary" className="px-2 py-0.5 h-6 text-xs">Cancel Orders</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Cancel All Pending Orders</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will cancel all pending orders ({ordersLive.filter(o=>o.status === 'pending').length}).
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Keep</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => { useTradingStore.getState().cancelAllPending(); notifySuccess('All pending orders cancelled') }}>Confirm</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                {/* Close Losses */}
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" className="px-2 py-0.5 h-6 text-xs">Close Losses</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Close Losing Trades</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Close all losing positions for a total PnL of ${losingTrades.reduce((s,p)=>s+p.pnl,0).toFixed(2)}.<br/>
-                        Total trades to be closed: {losingTrades.length}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => notifySuccess("Losing trades closed")}>Confirm</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            )}
-          <button 
-            onClick={onToggleExpand}
-            className="p-1 hover:bg-background-alpha rounded transition-all duration-300 ease-in-out"
-          >
-            {isExpanded ? 
-              <ChevronDown size={18} className="text-primary transition-transform duration-500 ease-in-out" /> : 
-              <ChevronUp size={18} className="text-primary transition-transform duration-500 ease-in-out" />
-            }
-          </button>
+              )}
+            </div>
+            <button 
+              onClick={onToggleExpand}
+              className="p-1 hover:bg-background-alpha rounded transition-all duration-300 ease-in-out"
+            >
+              {isExpanded ? 
+                <ChevronDown size={18} className="text-primary transition-transform duration-500 ease-in-out" /> : 
+                <ChevronUp size={18} className="text-primary transition-transform duration-500 ease-in-out" />
+              }
+            </button>
           </div>
         </div>
         <div className={`flex-1 transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
           {isExpanded && (
-            <div className="p-4 h-full">
+            <div className="p-1 h-full">
               {activeTab === 'Positions' && <PositionsTable />}
               {activeTab === 'Orders' && <OrdersTable />}
               {activeTab === 'History' && <HistoryTable />}
-              {activeTab === 'Alerts' && <div>Alerts Content</div>}
+              {activeTab === 'Alerts' && <AlertsTable />}
             </div>
           )}
         </div>

@@ -112,7 +112,13 @@ export default function Watchlist() {
                   <tr
                     key={instrument.symbol}
                     className="text-sm hover:bg-background-alpha cursor-pointer"
-                    onClick={() => useTradingStore.getState().setChartSymbol(`FX:${instrument.symbol}`)}
+                    onClick={() => {
+                      const store = useTradingStore.getState()
+                      store.setChartSymbol(`FX:${instrument.symbol}`)
+                      if (!store.prices[instrument.symbol]) {
+                        store.updatePrice(instrument.symbol, instrument.price)
+                      }
+                    }}
                   >
                     <td className="p-2">
                       <button 

@@ -43,6 +43,13 @@ export type HistoryEntry = {
   swap?: number
 }
 
+export type Alert = {
+  id: string
+  symbol: string
+  alertPrice: number
+  marketPrice: number
+}
+
 export const CONTRACT_SIZE = 100_000
 export const LEVERAGE = 100 // 1:100 leverage
 
@@ -64,6 +71,14 @@ type TradingState = {
   closePosition: (id: string) => void
   cancelOrder: (id: string) => void
   cancelAllPending: () => void
+  closeAllPositions: () => void
+  closeProfitablePositions: () => void
+  closeLosingPositions: () => void
+  _closePositionsByFilter: (filterFn: (p: Position) => boolean) => void
+  alerts: Alert[]
+  addAlert: (symbol: string, alertPrice: number) => void
+  removeAlert: (id: string) => void
+  clearAlerts: () => void
 }
 
 export const useTradingStore = create<TradingState>()(
@@ -97,33 +112,9 @@ export const useTradingStore = create<TradingState>()(
       ],
       chartSymbol: "FX:EURUSD",
       setChartSymbol: (sym: string) => set({ chartSymbol: sym }),
-      orders: [
-        {
-          id: "754321",
-          symbol: "EURUSD",
-          volume: 0.5,
-          type: "Buy Limit",
-          price: 1.08,
-          sl: 1.0750,
-          tp: 1.09,
-          currentPrice: 1.0875,
-          time: new Date().toISOString(),
-          status: "pending",
-        },
-        {
-          id: "754322",
-          symbol: "GBPJPY",
-          volume: 0.2,
-          type: "Sell Stop",
-          price: 191.0,
-          sl: 191.5,
-          tp: 190.0,
-          currentPrice: 191.20,
-          time: new Date().toISOString(),
-          status: "pending",
-        },
-      ],
+      orders: [],
       history: [],
+      alerts: [],
       balance: 100_000,
       equity: 100_000,
       marginUsed: 0,
@@ -217,6 +208,9 @@ export const useTradingStore = create<TradingState>()(
             newDayOpens = { ...newDayOpens, [symbol]: price }
           }
 
+          // update alerts market price
+          const updatedAlerts = state.alerts.map((a) => a.symbol === symbol ? { ...a, marketPrice: price } : a)
+
           return {
             prices: newPrices,
             dayOpens: newDayOpens,
@@ -226,6 +220,7 @@ export const useTradingStore = create<TradingState>()(
             marginUsed,
             equity,
             freeMargin,
+            alerts: updatedAlerts,
           }
         })
       },
@@ -300,8 +295,78 @@ export const useTradingStore = create<TradingState>()(
           orders: state.orders.filter((o) => o.status !== "pending"),
         }))
       },
+      closeAllPositions: () => {
+        useTradingStore.getState()._closePositionsByFilter(() => true)
+      },
+      closeProfitablePositions: () => {
+        useTradingStore.getState()._closePositionsByFilter((p) => p.pnl > 0)
+      },
+      closeLosingPositions: () => {
+        useTradingStore.getState()._closePositionsByFilter((p) => p.pnl < 0)
+      },
+      _closePositionsByFilter: (filterFn: (p: Position) => boolean) => {
+        set((state: TradingState) => {
+          const toClose = state.positions.filter(filterFn)
+          if (toClose.length === 0) return {}
+
+          const remaining = state.positions.filter((p) => !filterFn(p))
+
+          let balance = state.balance
+          let marginUsed = state.marginUsed
+
+          const historyEntries: HistoryEntry[] = toClose.map((pos) => {
+            const requiredMargin = (pos.volume * CONTRACT_SIZE) / LEVERAGE
+            balance += pos.pnl - (pos.commission ?? 0)
+            marginUsed -= requiredMargin
+
+            return {
+              id: pos.id,
+              symbol: pos.symbol,
+              side: pos.type ?? "Buy",
+              volume: pos.volume,
+              openTime: pos.openTime,
+              closeTime: new Date().toISOString(),
+              openPrice: pos.openPrice,
+              closePrice: pos.currentPrice ?? state.prices[pos.symbol] ?? pos.openPrice,
+              pnl: pos.pnl,
+              commission: pos.commission,
+              swap: pos.swap,
+            }
+          })
+
+          const equity = balance + remaining.reduce((s, p) => s + p.pnl, 0)
+          const freeMargin = equity - marginUsed
+
+          return {
+            positions: remaining,
+            history: [...state.history, ...historyEntries],
+            balance,
+            marginUsed,
+            equity,
+            freeMargin,
+          }
+        })
+      },
+      addAlert: (symbol: string, alertPrice: number) => {
+        const id = Date.now().toString()
+        set((state: TradingState) => ({
+          alerts: [...state.alerts, { id, symbol, alertPrice, marketPrice: state.prices[symbol] ?? alertPrice }],
+        }))
+      },
+      removeAlert: (id: string) => {
+        set((state: TradingState) => ({ alerts: state.alerts.filter((a) => a.id !== id) }))
+      },
+      clearAlerts: () => {
+        set({ alerts: [] })
+      },
     }),
-    { name: "trading-store" }
+    { name: "trading-store", version: 2, migrate: (state) => {
+        if (state) {
+          // ensure no default orders linger
+          return { ...state, orders: [] }
+        }
+        return state as any
+      } }
   )
 )
 

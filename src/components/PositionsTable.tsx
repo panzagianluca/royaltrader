@@ -18,7 +18,10 @@ import { useRef } from "react"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { notifySuccess } from "@/components/ui/notifications"
-import { useTradingStore } from "@/store/trading"
+import { useTradingStore, CONTRACT_SIZE } from "@/store/trading"
+
+const ROW_HEIGHT = 28
+const rowHeightClass = "h-7"
 
 // pull positions from global store
 const usePositions = () => useTradingStore((s) => s.positions)
@@ -36,7 +39,7 @@ export default function PositionsTable() {
     getScrollElement: () =>
       (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as Element | null),
     overscan: 8,
-    estimateSize: () => 40,
+    estimateSize: () => ROW_HEIGHT,
   })
 
   const virtualItems = rowVirtualizer.getVirtualItems()
@@ -68,19 +71,19 @@ export default function PositionsTable() {
       <ColumnGroup />
       <TableHeader>
         <TableRow>
-          <TableHead>Order ID</TableHead>
-          <TableHead>Symbol</TableHead>
-          <TableHead>Side</TableHead>
-          <TableHead>Volume</TableHead>
-          <TableHead>Open Time</TableHead>
-          <TableHead>Open Price</TableHead>
-          <TableHead>S/L</TableHead>
-          <TableHead>T/P</TableHead>
-          <TableHead>Current Price</TableHead>
-          <TableHead>Commission</TableHead>
-          <TableHead>Swap</TableHead>
-          <TableHead className="text-center">PnL</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead className="text-xs h-8">Order ID</TableHead>
+          <TableHead className="text-xs h-8">Symbol</TableHead>
+          <TableHead className="text-xs h-8">Side</TableHead>
+          <TableHead className="text-xs h-8">Volume</TableHead>
+          <TableHead className="text-xs h-8">Open Time</TableHead>
+          <TableHead className="text-xs h-8">Open Price</TableHead>
+          <TableHead className="text-xs h-8">S/L</TableHead>
+          <TableHead className="text-xs h-8">T/P</TableHead>
+          <TableHead className="text-xs h-8">Current Price</TableHead>
+          <TableHead className="text-xs h-8">Commission</TableHead>
+          <TableHead className="text-xs h-8">Swap</TableHead>
+          <TableHead className="text-xs h-8 text-center">PnL</TableHead>
+          <TableHead className="text-xs h-8 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
     </Table>
@@ -101,7 +104,7 @@ export default function PositionsTable() {
             {virtualItems.map((virtualRow: VirtualItem) => {
               const position = positions[virtualRow.index]
               return (
-                <TableRow key={position.id}>
+                <TableRow key={position.id} className={rowHeightClass}>
                   <TableCell className="py-1">{position.id}</TableCell>
                   <TableCell className="py-1">{position.symbol}</TableCell>
                   <TableCell className="py-1">{position.type ?? "—"}</TableCell>
@@ -113,15 +116,19 @@ export default function PositionsTable() {
                   <TableCell className="py-1">{prices[position.symbol]?.toFixed(5) ?? "—"}</TableCell>
                   <TableCell className="py-1">{position.commission?.toFixed(2) ?? "—"}</TableCell>
                   <TableCell className="py-1">{position.swap?.toFixed(2) ?? "—"}</TableCell>
-                  <TableCell className={`text-center py-1 ${position.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {position.pnl.toFixed(2)}
-                  </TableCell>
+                  {( () => {
+                     const current = prices[position.symbol] ?? position.currentPrice ?? position.openPrice;
+                     const pnl = (current - position.openPrice) * position.volume * CONTRACT_SIZE * (position.type === 'Sell' ? -1 : 1);
+                     return (
+                       <TableCell className={`text-center py-1 ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>{pnl.toFixed(2)}</TableCell>
+                     );
+                  })()}
                   <TableCell className="py-1">
                     <div className="flex justify-end space-x-2">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" className="p-1">
+                            <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
                               <Pencil size={14} />
                             </Button>
                           </TooltipTrigger>
@@ -135,7 +142,8 @@ export default function PositionsTable() {
                           <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
-                              className="p-1"
+                              size="icon"
+                              className="h-6 w-6 p-0"
                               onClick={() => {
                                 closePosition(position.id)
                                 notifySuccess(`Position ${position.id} closed successfully`)
@@ -152,7 +160,7 @@ export default function PositionsTable() {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" className="p-1">
+                            <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
                               <Scissors size={14} />
                             </Button>
                           </TooltipTrigger>

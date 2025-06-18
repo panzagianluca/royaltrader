@@ -23,6 +23,9 @@ import { useTradingStore } from "@/store/trading"
 
 const useOrders = () => useTradingStore((s) => s.orders)
 
+const ROW_HEIGHT = 28
+const rowHeightClass = "h-7"
+
 export default function OrdersTable() {
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const orders = useOrders()
@@ -31,7 +34,7 @@ export default function OrdersTable() {
     count: orders.length,
     getScrollElement: () => (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as Element | null),
     overscan: 8,
-    estimateSize: () => 40,
+    estimateSize: () => ROW_HEIGHT,
   })
 
   const virtualItems = rowVirtualizer.getVirtualItems()
@@ -61,17 +64,17 @@ export default function OrdersTable() {
       <ColumnGroup />
       <TableHeader>
         <TableRow>
-          <TableHead>Order ID</TableHead>
-          <TableHead>Symbol</TableHead>
-          <TableHead>Side</TableHead>
-          <TableHead>Volume</TableHead>
-          <TableHead>Creation Time</TableHead>
-          <TableHead>Order Price</TableHead>
-          <TableHead>S/L</TableHead>
-          <TableHead>T/P</TableHead>
-          <TableHead>Current Price</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead className="text-xs h-8">Order ID</TableHead>
+          <TableHead className="text-xs h-8">Symbol</TableHead>
+          <TableHead className="text-xs h-8">Side</TableHead>
+          <TableHead className="text-xs h-8">Volume</TableHead>
+          <TableHead className="text-xs h-8">Creation Time</TableHead>
+          <TableHead className="text-xs h-8">Order Price</TableHead>
+          <TableHead className="text-xs h-8">S/L</TableHead>
+          <TableHead className="text-xs h-8">T/P</TableHead>
+          <TableHead className="text-xs h-8">Current Price</TableHead>
+          <TableHead className="text-xs h-8">Status</TableHead>
+          <TableHead className="text-xs h-8 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
     </Table>
@@ -92,7 +95,7 @@ export default function OrdersTable() {
             {virtualItems.map((virtualRow: VirtualItem) => {
               const order = orders[virtualRow.index]
               return (
-              <TableRow key={order.id}>
+              <TableRow key={order.id} className={rowHeightClass}>
                 <TableCell className="py-1">{order.id}</TableCell>
                 <TableCell className="py-1">{order.symbol}</TableCell>
                   <TableCell className="py-1">{order.type}</TableCell>
@@ -112,7 +115,7 @@ export default function OrdersTable() {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" className="p-1">
+                            <Button variant="ghost" size="icon" className="h-6 w-6 p-0">
                             <Pencil size={14} />
                           </Button>
                         </TooltipTrigger>
@@ -127,7 +130,8 @@ export default function OrdersTable() {
                           <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
-                              className="p-1"
+                              size="icon"
+                              className="h-6 w-6 p-0"
                               onClick={() => {
                                 cancelOrder(order.id)
                                 notifySuccess(`Order ${order.id} cancelled`)
