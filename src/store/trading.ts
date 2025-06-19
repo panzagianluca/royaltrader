@@ -373,7 +373,7 @@ export const useTradingStore = create<TradingState>()(
 /* price simulator for demo */
 if (typeof window !== "undefined") {
   setInterval(() => {
-    const { prices, updatePrice, chartSymbol } = useTradingStore.getState()
+    const { prices, updatePrice } = useTradingStore.getState()
     Object.entries(prices).forEach(([symbol, price]) => {
       const jitter = (Math.random() - 0.5) * 0.0002
       updatePrice(symbol, Number((price + jitter).toFixed(5)))
