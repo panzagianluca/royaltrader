@@ -374,10 +374,7 @@ export const useTradingStore = create<TradingState>()(
 if (typeof window !== "undefined") {
   setInterval(() => {
     const { prices, updatePrice, chartSymbol } = useTradingStore.getState()
-    const activeSym = chartSymbol?.split(':')[1] ?? chartSymbol
-
     Object.entries(prices).forEach(([symbol, price]) => {
-      // Previously skipped active chart symbol; now jitter all symbols so PnL updates consistently.
       const jitter = (Math.random() - 0.5) * 0.0002
       updatePrice(symbol, Number((price + jitter).toFixed(5)))
     })

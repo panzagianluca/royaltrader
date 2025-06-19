@@ -99,8 +99,6 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   const liveEquity = selectedAccount?.equity ?? selectedAccount?.balance ?? 0
 
   const totalDaily = selectedAccount?.dailyPnl ?? 0
-  const totalWeekly = totalDaily // placeholder until weekly metrics available
-  const totalMonthly = totalDaily // placeholder
 
   const dailyStopLevel = selectedAccount?.dailyStopLevel ?? (liveBalance * 0.95)
 

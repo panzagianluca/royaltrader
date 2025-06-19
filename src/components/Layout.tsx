@@ -95,7 +95,7 @@ export default function Layout() {
       radius="medium"
       scaling="100%"
     >
-      <AppToaster richColors position="top-right" />
+      <AppToaster />
       <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <div className="flex h-screen bg-sidebar w-full">
           <LeftSidebar 

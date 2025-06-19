@@ -36,11 +36,7 @@ const useOrdersLive = () => {
   const { orders, selectedAccountId } = useAccountStore()
   return selectedAccountId ? orders[selectedAccountId] ?? [] : []
 }
-const useAlertsCount = () => {
-  const { selectedAccountId } = useAccountStore()
-  // keep alerts in trading store for now
-  return useTradingStore((s)=>s.alerts.length)
-}
+const useAlertsCount = () => useTradingStore((s)=>s.alerts.length)
 
 export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBannerProps) {
   const [activeTab, setActiveTab] = usePersistedState<Tab>('ui.bottomBannerTab', 'Positions');

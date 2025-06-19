@@ -102,7 +102,7 @@ export default function OrdersTable() {
                 <TableCell className="py-1">{order.id}</TableCell>
                 <TableCell className="py-1">{order.symbol}</TableCell>
                   <TableCell className="py-1">{order.type}</TableCell>
-                <TableCell className="py-1">{order.volume.toFixed(2)}</TableCell>
+                <TableCell className="py-1">{(order.volume ?? 0).toFixed(2)}</TableCell>
                   <TableCell className="py-1">{order.time}</TableCell>
                   <TableCell className="py-1">{order.price.toFixed(5)}</TableCell>
                   <TableCell className="py-1">{order.sl?.toFixed(5) ?? "—"}</TableCell>
