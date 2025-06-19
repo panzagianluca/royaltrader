@@ -38,11 +38,13 @@ type NavItem = {
 function NavMenuItems({ 
   items, 
   accounts,
+  activeAccountId,
   onManageClick,
   onAccountClick,
 }: { 
   items: NavItem[], 
   accounts: Account[],
+  activeAccountId?: string,
   onManageClick?: () => void 
   onAccountClick?: (account: Account) => void
 }) {
@@ -109,7 +111,10 @@ function NavMenuItems({
                       ))}
                       {accountsToShow.map((account) => (
                         <SidebarMenuSubItem key={account.id}>
-                          <SidebarMenuSubButton onClick={() => onAccountClick?.(account)}>
+                          <SidebarMenuSubButton 
+                            data-cy={`account-item-${account.id}`}
+                            className={account.id === activeAccountId ? "bg-muted text-accent-foreground" : ""}
+                            onClick={() => onAccountClick?.(account)}>
                             <span>Account: {account.accountNumber}</span>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -129,11 +134,13 @@ function NavMenuItems({
 export function NavMain({ 
   items, 
   accounts,
+  activeAccountId,
   onManageClick,
   onAccountClick 
 }: { 
   items: NavItem[], 
   accounts: Account[],
+  activeAccountId?: string,
   onManageClick?: () => void,
   onAccountClick?: (account: Account) => void
 }) {
@@ -146,6 +153,7 @@ export function NavMain({
             <NavMenuItems 
               items={item.items ?? []} 
               accounts={accounts}
+              activeAccountId={activeAccountId}
               onManageClick={onManageClick} 
               onAccountClick={onAccountClick}
             />

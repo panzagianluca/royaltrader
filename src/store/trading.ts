@@ -377,10 +377,7 @@ if (typeof window !== "undefined") {
     const activeSym = chartSymbol?.split(':')[1] ?? chartSymbol
 
     Object.entries(prices).forEach(([symbol, price]) => {
-      // Skip jittering the actively viewed chart symbol so that
-      // its price always reflects the TradingView feed.
-      if (symbol === activeSym) return
-
+      // Previously skipped active chart symbol; now jitter all symbols so PnL updates consistently.
       const jitter = (Math.random() - 0.5) * 0.0002
       updatePrice(symbol, Number((price + jitter).toFixed(5)))
     })

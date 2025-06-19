@@ -14,6 +14,7 @@ import '../styles/theme.css'
 import { Account } from "@/data/accounts";
 import { usePersistedState } from "@/hooks/usePersistedState"
 import { AppToaster } from "@/components/ui/notifications";
+import { useAccountStore } from "@/store/accountStore";
 
 export default function Layout() {
   const [currentPage, setCurrentPage] = useState('chart');
@@ -29,7 +30,9 @@ export default function Layout() {
     'ui.sidebarExpanded',
     true
   )
+  const { selectedAccountId, accounts, selectAccount } = useAccountStore()
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
+  const [isSwitchingAccount, setIsSwitchingAccount] = useState(false)
 
   useEffect(() => {
     if (darkMode) {
@@ -39,6 +42,12 @@ export default function Layout() {
     }
     localStorage.setItem('darkMode', JSON.stringify(darkMode))
   }, [darkMode])
+
+  // sync selectedAccount when store id changes
+  useEffect(() => {
+    const acct = accounts.find((a: any) => a.id === selectedAccountId) as Account | undefined
+    setSelectedAccount(acct ?? null)
+  }, [selectedAccountId, accounts])
 
   const navigateTo = (page: string) => {
     setCurrentPage(page);
@@ -91,12 +100,22 @@ export default function Layout() {
         <div className="flex h-screen bg-sidebar w-full">
           <LeftSidebar 
             selectedAccount={selectedAccount} 
-            onAccountSelect={setSelectedAccount} 
+            onAccountSelect={(acct) => {
+              setIsSwitchingAccount(true)
+              selectAccount(acct.id)
+              // mimic async load
+              setTimeout(() => setIsSwitchingAccount(false), 300)
+            }} 
             navigateTo={navigateTo}
             currentPage={currentPage}
           />
           
-          <div className="flex-1 flex flex-col">
+          <div className="relative flex-1 flex flex-col">
+            {isSwitchingAccount && (
+              <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+              </div>
+            )}
             <div style={{height: '50px'}} className="flex items-center px-1 pt-1">
               <div className="flex-1">
                 <TopNav 

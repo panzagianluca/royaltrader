@@ -6,6 +6,7 @@ import * as Checkbox from '@radix-ui/react-checkbox'
 import { Button, SegmentedControl } from '@radix-ui/themes'
 import { cn } from '@/lib/utils'
 import { useTradingStore, CONTRACT_SIZE, LEVERAGE } from '@/store/trading'
+import { useAccountStore } from '@/store/accountStore'
 import { notifySuccess, notifyError } from '@/components/ui/notifications'
 
 export default function OrderEntry() {
@@ -28,8 +29,8 @@ export default function OrderEntry() {
   const prices = useTradingStore((s) => s.prices)
   const balance = useTradingStore((s) => s.balance)
   const freeMargin = useTradingStore((s) => s.freeMargin)
-  const placeMarket = useTradingStore((s) => s.placeMarket)
-  const placeOrder = useTradingStore((s) => s.placeOrder)
+  const placeMarket = useAccountStore((s) => s.placeMarket)
+  const placeOrder = useAccountStore((s) => s.placeOrder)
 
   const symbolKey = chartSymbol.split(':')[1] ?? chartSymbol
   const currentPrice = prices[symbolKey]?.toString() ?? '0'
@@ -74,12 +75,14 @@ export default function OrderEntry() {
 
     placeOrder({
       symbol: symbolKey,
+      qty: lots,
+      side: sideDir,
       volume: lots,
       type: typeLabel,
       price: priceNum,
       sl: isStopLossEnabled ? parseFloat(stopLoss) || undefined : undefined,
       tp: isTakeProfitEnabled ? parseFloat(takeProfit) || undefined : undefined,
-    })
+    } as any)
 
     notifySuccess(`${typeLabel} order placed for ${lots} ${symbolKey}`)
     // reset

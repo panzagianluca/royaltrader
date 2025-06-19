@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sidebar"
 import AccountManageModal from "./AccountManageModal"
 import { accountsData, Account } from "@/data/accounts";
+import { useAccountStore } from "@/store/accountStore";
 import { Button } from "./ui/button"
 import { Separator } from "./ui/separator"
 
@@ -146,19 +147,27 @@ function ConnectionStatusIndicator() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="cursor-default">
+    <div className="flex flex-col gap-2 py-1">
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" className="cursor-default h-6 w-6 p-0">
           {getConnectionStatusIcon()}
         </Button>
-        {open && <span className="text-xs text-muted-foreground">Connection: {connectionStatus}</span>}
+        {open && (
+          <span className="text-xs text-muted-foreground">
+            Connection: {connectionStatus}
+          </span>
+        )}
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="cursor-default">
+
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" className="cursor-default h-6 w-6 p-0">
           <Signal size={16} className="text-blue-500" />
         </Button>
-        {open && <span className="text-xs text-muted-foreground">Latency: {latency}ms</span>}
+        {open && (
+          <span className="text-xs text-muted-foreground">Latency: {latency}ms</span>
+        )}
       </div>
+
       <Separator />
     </div>
   )
@@ -167,6 +176,7 @@ function ConnectionStatusIndicator() {
 export function AppSidebar({ selectedAccount, onAccountSelect, navigateTo, currentPage, ...props }: AppSidebarProps) {
   const [isManageModalOpen, setIsManageModalOpen] = React.useState(false)
   const [accounts, setAccounts] = React.useState(accountsData);
+  const { selectedAccountId } = useAccountStore()
 
   const handleManageClick = () => {
     setIsManageModalOpen(true)
@@ -195,6 +205,7 @@ export function AppSidebar({ selectedAccount, onAccountSelect, navigateTo, curre
             onManageClick={handleManageClick} 
             accounts={visibleAccounts}
             onAccountClick={onAccountSelect}
+            activeAccountId={selectedAccountId ?? undefined}
           />
           <NavProjects title="Navigation" projects={projectsWithActiveState} navigateTo={navigateTo} />
         </SidebarContent>

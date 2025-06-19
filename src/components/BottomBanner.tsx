@@ -19,6 +19,7 @@ import {
 import { notifySuccess } from "@/components/ui/notifications";
 import { useTradingStore } from "@/store/trading";
 import AlertsTable from './AlertsTable';
+import { useAccountStore } from "@/store/accountStore";
 
 interface BottomBannerProps {
   isExpanded: boolean
@@ -27,18 +28,29 @@ interface BottomBannerProps {
 
 type Tab = 'Positions' | 'Orders' | 'History' | 'Alerts';
 
-const usePositionsLive = () => useTradingStore((s) => s.positions);
-const useOrdersLive = () => useTradingStore((s) => s.orders);
+const usePositionsLive = () => {
+  const { positions, selectedAccountId } = useAccountStore()
+  return selectedAccountId ? positions[selectedAccountId] ?? [] : []
+}
+const useOrdersLive = () => {
+  const { orders, selectedAccountId } = useAccountStore()
+  return selectedAccountId ? orders[selectedAccountId] ?? [] : []
+}
+const useAlertsCount = () => {
+  const { selectedAccountId } = useAccountStore()
+  // keep alerts in trading store for now
+  return useTradingStore((s)=>s.alerts.length)
+}
 
 export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBannerProps) {
   const [activeTab, setActiveTab] = usePersistedState<Tab>('ui.bottomBannerTab', 'Positions');
   const positionsLive = usePositionsLive();
   const ordersLive = useOrdersLive();
-  const alertsCount = useTradingStore((s)=>s.alerts.length);
+  const alertsCount = useAlertsCount();
 
-  const totalPnL = positionsLive.reduce((sum, p) => sum + p.pnl, 0);
-  const profitableTrades = positionsLive.filter((p) => p.pnl > 0);
-  const losingTrades = positionsLive.filter((p) => p.pnl < 0);
+  const totalPnL = positionsLive.reduce((sum, p) => sum + (p.pnl ?? 0), 0);
+  const profitableTrades = positionsLive.filter((p) => (p.pnl ?? 0) > 0);
+  const losingTrades = positionsLive.filter((p) => (p.pnl ?? 0) < 0);
 
   const positionsCountMock = positionsLive.length;
   const ordersCountMock = ordersLive.length;
@@ -114,7 +126,7 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
                   <AlertDialogHeader>
                     <AlertDialogTitle>Close Profitable Trades</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Close all profitable positions for a total PnL of ${profitableTrades.reduce((s,p)=>s+p.pnl,0).toFixed(2)}.<br/>
+                      Close all profitable positions for a total PnL of ${profitableTrades.reduce((s,p)=>s+(p.pnl ?? 0),0).toFixed(2)}.<br/>
                       Total trades to be closed: {profitableTrades.length}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -133,7 +145,7 @@ export default function BottomBanner({ isExpanded, onToggleExpand }: BottomBanne
                   <AlertDialogHeader>
                     <AlertDialogTitle>Close Losing Trades</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Close all losing positions for a total PnL of ${losingTrades.reduce((s,p)=>s+p.pnl,0).toFixed(2)}.<br/>
+                      Close all losing positions for a total PnL of ${losingTrades.reduce((s,p)=>s+(p.pnl ?? 0),0).toFixed(2)}.<br/>
                       Total trades to be closed: {losingTrades.length}
                     </AlertDialogDescription>
                   </AlertDialogHeader>

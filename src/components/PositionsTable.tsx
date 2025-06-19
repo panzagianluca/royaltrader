@@ -18,20 +18,22 @@ import { useRef } from "react"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { notifySuccess } from "@/components/ui/notifications"
-import { useTradingStore, CONTRACT_SIZE } from "@/store/trading"
+import { CONTRACT_SIZE, useTradingStore } from "@/store/trading"
+import { useAccountStore } from "@/store/accountStore"
 
 const ROW_HEIGHT = 28
 const rowHeightClass = "h-7"
 
-// pull positions from global store
-const usePositions = () => useTradingStore((s) => s.positions)
-const usePrices = () => useTradingStore((s) => s.prices)
-const useClosePosition = () => useTradingStore((s) => s.closePosition)
+const usePositions = () => {
+  const { positions, selectedAccountId } = useAccountStore()
+  return selectedAccountId ? positions[selectedAccountId] ?? [] : []
+}
+const useClosePosition = () => useAccountStore((s) => s.closePosition)
 
 export default function PositionsTable() {
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const positions = usePositions()
-  const prices = usePrices()
+  const prices = useTradingStore((s) => s.prices)
   const closePosition = useClosePosition()
 
   const rowVirtualizer = useVirtualizer({

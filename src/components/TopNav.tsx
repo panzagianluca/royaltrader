@@ -17,7 +17,6 @@ import { Separator } from "@/components/ui/separator"
 import { useState, useEffect } from 'react'
 import { Account } from '@/data/accounts'
 import { useZoom } from '@/contexts/ZoomContext'
-import { useTradingStore } from "@/store/trading"
 
 const MOCK_NOTIFICATIONS = [
   {
@@ -96,17 +95,14 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
   const [showBadge, setShowBadge] = useState(true)
   const { zoomIn, zoomOut } = useZoom();
 
-  const positionsLive = useTradingStore((s) => s.positions)
-  const liveBalance = useTradingStore((s) => s.balance)
-  const liveEquity = useTradingStore((s) => s.equity)
+  const liveBalance = selectedAccount?.balance ?? 0
+  const liveEquity = selectedAccount?.equity ?? selectedAccount?.balance ?? 0
 
-  // Open (unrealized) PnL across all current positions.
-  const openPnl = positionsLive.reduce((s, p) => s + p.pnl, 0)
+  const totalDaily = selectedAccount?.dailyPnl ?? 0
+  const totalWeekly = totalDaily // placeholder until weekly metrics available
+  const totalMonthly = totalDaily // placeholder
 
-  // For now weekly/monthly equal open PnL until we have historical tracking.
-  const totalDaily = openPnl
-  const totalWeekly = openPnl
-  const totalMonthly = openPnl
+  const dailyStopLevel = selectedAccount?.dailyStopLevel ?? (liveBalance * 0.95)
 
   const formatBalance = (balance: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -193,7 +189,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="cursor-default">
+                <Button variant="outline" data-cy="topnav-account" className="cursor-default min-w-[140px]">
                   Account: {selectedAccount ? selectedAccount.accountNumber : 'N/A'}
                 </Button>
               </TooltipTrigger>
@@ -204,7 +200,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="cursor-default">
+                <Button variant="outline" className="cursor-default min-w-[140px]">
                   Balance: {formatBalance(liveBalance)}
                 </Button>
               </TooltipTrigger>
@@ -215,7 +211,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="cursor-default">
+                <Button variant="outline" className="cursor-default min-w-[140px]">
                   Equity: {formatBalance(liveEquity)}
                 </Button>
               </TooltipTrigger>
@@ -226,7 +222,7 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="cursor-default">
+                <Button variant="outline" className="cursor-default min-w-[140px]">
                   Daily PnL: {formatBalance(totalDaily)}
                 </Button>
               </TooltipTrigger>
@@ -237,30 +233,8 @@ export default function TopNav({ darkMode, setDarkMode, selectedAccount }: TopNa
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="cursor-default">
-                  Weekly PnL: {formatBalance(totalWeekly)}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Profit/Loss for the current trading week</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="cursor-default">
-                  Monthly PnL: {formatBalance(totalMonthly)}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Profit/Loss for the current trading month</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" className="cursor-default">
-                  Daily Stop Level: {formatBalance(liveBalance * 0.95)}
+                <Button variant="outline" className="cursor-default min-w-[140px]">
+                  Daily Stop Level: {formatBalance(dailyStopLevel)}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

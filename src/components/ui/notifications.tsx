@@ -9,4 +9,14 @@ export const notifyError = (message: string) => toast.error(message)
 
 export const notifyInfo = (message: string) => toast(message)
 
-export const AppToaster = Toaster 
+export const AppToaster = () => (
+  <Toaster
+    richColors
+    closeButton
+    toastOptions={{
+      classNames: {
+        closeButton: 'text-red-500 hover:text-red-600',
+      },
+    }}
+  />
+) 

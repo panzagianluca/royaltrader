@@ -19,9 +19,12 @@ import { useRef } from "react"
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { notifySuccess } from "@/components/ui/notifications"
-import { useTradingStore } from "@/store/trading"
+import { useAccountStore } from "@/store/accountStore"
 
-const useOrders = () => useTradingStore((s) => s.orders)
+const useOrders = () => {
+  const { selectedAccountId, orders } = useAccountStore()
+  return selectedAccountId ? orders[selectedAccountId] ?? [] : []
+}
 
 const ROW_HEIGHT = 28
 const rowHeightClass = "h-7"
@@ -29,7 +32,7 @@ const rowHeightClass = "h-7"
 export default function OrdersTable() {
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const orders = useOrders()
-  const cancelOrder = useTradingStore((s) => s.cancelOrder)
+  const cancelOrder = useAccountStore((s) => s.cancelOrder)
   const rowVirtualizer = useVirtualizer({
     count: orders.length,
     getScrollElement: () => (scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]') as Element | null),
